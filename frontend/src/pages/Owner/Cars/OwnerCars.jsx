@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Added for navigation
+import { useNavigate } from "react-router-dom"; 
 import { Web3Context } from "../../../context/Web3Context";
 import { fetchAllCars } from "../../../context/useCarRental";
 
 export default function OwnerCars() {
   const { account } = useContext(Web3Context);
-  const navigate = useNavigate(); // Hook for the Back button
+  const navigate = useNavigate(); 
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,9 +31,16 @@ export default function OwnerCars() {
   }, [account]);
 
   return (
-    <div className="page owner-cars-page" style={{ padding: "2rem", color: "white", background: "#0f0f12", minHeight: "100vh" }}>
+    <div className="page owner-cars-page" style={{ 
+      padding: "2rem", 
+      color: "white", 
+      background: "#0f0f12", 
+      minHeight: "100vh",
+      width: "100%",
+      boxSizing: "border-box"
+    }}>
       
-      {/* Back Button Section */}
+      {/* Navigation Button */}
       <div style={{ marginBottom: "2rem" }}>
         <button 
           onClick={() => navigate("/owner")}
@@ -57,15 +64,17 @@ export default function OwnerCars() {
         </button>
       </div>
 
-      <h1 style={{ marginBottom: "2rem", fontSize: "2rem" }}>My Full Fleet</h1>
+      <h1 style={{ marginBottom: "2rem", fontSize: "2rem", fontWeight: "bold" }}>My Full Fleet</h1>
 
       {loading ? (
         <p>Loading your vehicles...</p>
       ) : (
+        /* GRID SYSTEM: This ensures cards fill the horizontal space */
         <div style={{ 
           display: "grid", 
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
-          gap: "25px" 
+          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", 
+          gap: "25px",
+          width: "100%" 
         }}>
           {cars.length > 0 ? (
             cars.map((car) => (
@@ -74,21 +83,31 @@ export default function OwnerCars() {
                 padding: "25px", 
                 borderRadius: "15px", 
                 border: "1px solid #333",
-                boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
+                boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                minHeight: "200px"
               }}>
-                <h3 style={{ marginTop: 0, color: "#a855f7" }}>{car.model}</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.9rem" }}>
-                  <p style={{ margin: 0 }}><strong>Location:</strong> {car.location || "Not specified"}</p>
-                  <p style={{ margin: 0 }}><strong>Price/Day:</strong> {car.pricePerDay} ETH</p>
-                  <p style={{ margin: 0 }}>
-                    <strong>Status:</strong> 
-                    <span style={{ 
-                      marginLeft: "8px",
-                      color: car.status === 0 ? "#22c55e" : "#ef4444" 
-                    }}>
-                      {car.status === 0 ? "● Available" : "● Rented"}
-                    </span>
-                  </p>
+                <div>
+                  <h3 style={{ marginTop: 0, color: "#a855f7", fontSize: "1.4rem" }}>{car.model}</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.95rem" }}>
+                    <p style={{ margin: 0 }}><strong>Location:</strong> {car.location || "Not specified"}</p>
+                    <p style={{ margin: 0 }}><strong>Price/Day:</strong> {car.pricePerDay} ETH</p>
+                  </div>
+                </div>
+                
+                <div style={{ 
+                  marginTop: "20px",
+                  padding: "10px",
+                  borderRadius: "10px",
+                  textAlign: "center",
+                  background: car.status === 0 ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                  color: car.status === 0 ? "#22c55e" : "#ef4444",
+                  fontWeight: "bold",
+                  fontSize: "0.9rem"
+                }}>
+                  {car.status === 0 ? "● Available" : "● Rented"}
                 </div>
               </div>
             ))
