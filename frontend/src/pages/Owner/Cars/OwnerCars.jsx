@@ -31,86 +31,74 @@ export default function OwnerCars() {
 
   return (
     <div className="page owner-cars-page" style={{ 
-      padding: "2rem", 
+      padding: "3rem", 
       color: "white", 
       background: "#0f0f12", 
       minHeight: "100vh",
-      width: "100%", // Ensures the page container uses all horizontal space
+      width: "100%", // Explicitly uses the whole screen width
       boxSizing: "border-box"
     }}>
       
-      {/* Back Button */}
-      <div style={{ marginBottom: "2rem" }}>
+      <div style={{ marginBottom: "3rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1 style={{ margin: 0, fontSize: "2.5rem", fontWeight: "bold" }}>My Full Fleet</h1>
         <button 
           onClick={() => navigate("/owner")}
           style={{
-            padding: "10px 20px",
-            background: "rgba(255, 255, 255, 0.05)",
+            padding: "10px 25px",
+            background: "rgba(255, 255, 255, 0.1)",
             color: "white",
             border: "1px solid #444",
-            borderRadius: "8px",
+            borderRadius: "12px",
             cursor: "pointer",
-            fontWeight: "bold",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px"
+            fontWeight: "bold"
           }}
         >
           ← Back to Dashboard
         </button>
       </div>
 
-      <h1 style={{ marginBottom: "2.5rem", fontSize: "2.2rem", fontWeight: "bold" }}>
-        My Full Fleet
-      </h1>
-
       {loading ? (
-        <p>Loading your vehicles...</p>
+        <p>Syncing with Blockchain...</p>
       ) : (
-        /* GRID SYSTEM: This forces horizontal spreading */
+        /* THE HORIZONTAL GRID FIX */
         <div style={{ 
           display: "grid", 
           gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", 
-          gap: "25px",
+          gap: "30px",
           width: "100%" 
         }}>
-          {cars.length > 0 ? (
-            cars.map((car) => (
-              <div key={car.id} style={{ 
-                background: "#1e1e24", 
-                padding: "25px", 
-                borderRadius: "15px", 
-                border: "1px solid #333",
-                boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                minHeight: "220px"
-              }}>
-                <div>
-                  <h3 style={{ marginTop: 0, color: "#a855f7", fontSize: "1.4rem" }}>{car.model}</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <p style={{ margin: 0 }}><strong>Location:</strong> {car.location || "Not specified"}</p>
-                    <p style={{ margin: 0 }}><strong>Price/Day:</strong> {car.pricePerDay} ETH</p>
-                  </div>
-                </div>
-                
-                <div style={{ 
-                  marginTop: "20px",
-                  padding: "10px",
-                  borderRadius: "10px",
-                  textAlign: "center",
-                  background: car.status === 0 ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-                  color: car.status === 0 ? "#22c55e" : "#ef4444",
-                  fontWeight: "bold"
-                }}>
-                  {car.status === 0 ? "● Available" : "● Rented"}
-                </div>
+          {cars.map((car) => (
+            <div key={car.id} style={{ 
+              background: "linear-gradient(145deg, #1e1e24 0%, #16161a 100%)", 
+              padding: "30px", 
+              borderRadius: "20px", 
+              border: "1px solid #333",
+              boxShadow: "0 10px 20px rgba(0,0,0,0.5)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "240px"
+            }}>
+              <div>
+                <h3 style={{ marginTop: 0, color: "#a855f7", fontSize: "1.6rem" }}>{car.model}</h3>
+                <p style={{ color: "#888" }}>Location: {car.location || "Delhi"}</p>
+                <p><strong>Price:</strong> {car.pricePerDay} ETH / Day</p>
               </div>
-            ))
-          ) : (
-            <p style={{ color: "#888" }}>You haven't registered any cars yet.</p>
-          )}
+              
+              <div style={{ 
+                marginTop: "20px",
+                padding: "12px",
+                borderRadius: "10px",
+                textAlign: "center",
+                background: car.status === 0 ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                color: car.status === 0 ? "#22c55e" : "#ef4444",
+                fontWeight: "bold",
+                border: "1px solid currentColor"
+              }}>
+                {car.status === 0 ? "Available" : "Currently Rented"}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
