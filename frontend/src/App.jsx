@@ -6,39 +6,40 @@ import RenterDashboard from "./pages/Renter/Dashboard/RenterDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OwnerCars from "./pages/Owner/Cars/OwnerCars";
 
-// Shared Navigation Bar with Logout & Wallet Switching Logic
+// This component handles the shared Navigation Bar and Wallet Logic
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 1. Listen for MetaMask Account or Network changes
+  // 1. Listen for MetaMask Account or Network changes automatically
   useEffect(() => {
     if (window.ethereum) {
-      // If user switches account in MetaMask extension
+      // Refresh the page if the user manually switches accounts in MetaMask
       window.ethereum.on("accountsChanged", (accounts) => {
         if (accounts.length > 0) {
-          window.location.reload(); // Refresh to sync new wallet
+          window.location.reload(); 
         } else {
-          window.location.href = "/login"; // Redirect if all accounts disconnected
+          // If the user disconnects all accounts, send them to login
+          window.location.href = "/login";
         }
       });
 
-      // If user switches network (e.g., moves away from Sepolia)
+      // Refresh the page if the user switches networks (e.g., Sepolia to Mainnet)
       window.ethereum.on("chainChanged", () => {
         window.location.reload();
       });
     }
   }, []);
 
-  // Hide the navbar on the login page
+  // Hide the navbar on the login page so it doesn't look cluttered
   if (location.pathname === "/login") return null;
 
   const handleLogout = () => {
-    // Clear app session data
+    // Clear the app session and stored wallet data
     localStorage.removeItem("userRole");
     localStorage.removeItem("walletAddress");
     
-    // Fully reset app state by redirecting to login
+    // Fully reset the application state by redirecting to the login page
     window.location.href = "/login"; 
   };
 
@@ -83,14 +84,15 @@ const Navigation = () => {
 export default function App() {
   return (
     <BrowserRouter>
-      {/* Navigation sits inside Router but outside Routes to stay global */}
+      {/* The Navigation bar stays visible as you switch between dashboards */}
       <Navigation /> 
       
       <Routes>
+        {/* Default route redirects immediately to login */}
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Owner Routes */}
+        {/* Owner specific routes */}
         <Route
           path="/owner"
           element={
@@ -99,9 +101,10 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        {/* Navigation to see all cars */}
         <Route path="/owner/cars" element={<OwnerCars />} />
 
-        {/* Renter Routes */}
+        {/* Renter specific routes */}
         <Route
           path="/renter"
           element={
@@ -111,7 +114,7 @@ export default function App() {
           }
         />
 
-        {/* Fallback to Login */}
+        {/* Fallback to Login for any undefined URL */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
