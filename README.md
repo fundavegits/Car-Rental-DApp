@@ -64,15 +64,14 @@ Click Create App
 
 Select:
 
-Chain: Ethereum
+Network: ethereum sepolia 
 
-Network: Sepolia
-
-Copy the HTTPS RPC URL
+Copy the Endpoint URL
 
 This will be your:
 
 SEPOLIA_RPC_URL
+also create a api key
 
 3️⃣ Get Sepolia Test ETH
 
