@@ -1,40 +1,26 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Added for navigation
 import { Web3Context } from "../../../context/Web3Context";
-import { 
-  fetchAllCars, 
-  updateCarDetails, 
-  setCarUnavailable 
-} from "../../../context/useCarRental";
-import "../../../styles/layout.css";
-import "./OwnerCars.css";
+import { fetchAllCars } from "../../../context/useCarRental";
 
 export default function OwnerCars() {
-  const { account, signer } = useContext(Web3Context);
+  const { account } = useContext(Web3Context);
+  const navigate = useNavigate(); // Hook for the Back button
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  /* ---------------- Fetch owner's cars ---------------- */
   const loadCars = async () => {
     if (!account) return;
-    setLoading(true);
     try {
+      setLoading(true);
       const allCars = await fetchAllCars();
-      // Filter: Match owner AND status 0 (Available)
-      const ownerAvailableCars = allCars
-        .filter(
-          (car) =>
-            car.owner.toLowerCase() === account.toLowerCase() &&
-            Number(car.status) === 0
-        )
-        .map((car) => ({
-          id: car.id,
-          model: car.model,
-          location: car.location, // Property name from useCarRental.js
-          pricePerDay: car.pricePerDay,
-        }));
-
-      setCars(ownerAvailableCars);
+      const owned = allCars.filter(
+        (car) => car.owner.toLowerCase() === account.toLowerCase()
+      );
+      setCars(owned);
     } catch (err) {
-      console.error("Failed to load owner cars:", err);
+      console.error("Error fetching cars:", err);
     } finally {
       setLoading(false);
     }
@@ -44,79 +30,71 @@ export default function OwnerCars() {
     loadCars();
   }, [account]);
 
-  const handleUpdate = async (carId, newLoc, newPrice) => {
-    try {
-      await updateCarDetails(signer, carId, newLoc, newPrice);
-      alert("Car updated successfully!");
-      loadCars();
-    } catch (err) {
-      console.error("Update failed:", err);
-      alert("Update failed. Check console.");
-    }
-  };
-
-  const handleMakeUnavailable = async (carId) => {
-    try {
-      await setCarUnavailable(signer, carId);
-      alert("Car is now unavailable.");
-      loadCars();
-    } catch (err) {
-      console.error("Action failed:", err);
-    }
-  };
-
-  if (!account) return <div className="owner-page">Please connect your wallet.</div>;
-
   return (
-    <div className="owner-page">
-      <h1 className="owner-title">My Cars</h1>
+    <div className="page owner-cars-page" style={{ padding: "2rem", color: "white", background: "#0f0f12", minHeight: "100vh" }}>
+      
+      {/* Back Button Section */}
+      <div style={{ marginBottom: "2rem" }}>
+        <button 
+          onClick={() => navigate("/owner")}
+          style={{
+            padding: "10px 20px",
+            background: "rgba(255, 255, 255, 0.05)",
+            color: "white",
+            border: "1px solid #444",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            transition: "background 0.3s"
+          }}
+          onMouseOver={(e) => e.target.style.background = "rgba(255, 255, 255, 0.1)"}
+          onMouseOut={(e) => e.target.style.background = "rgba(255, 255, 255, 0.05)"}
+        >
+          ← Back to Dashboard
+        </button>
+      </div>
+
+      <h1 style={{ marginBottom: "2rem", fontSize: "2rem" }}>My Full Fleet</h1>
+
       {loading ? (
-        <p>Loading cars...</p>
-      ) : cars.length === 0 ? (
-        <p>No available cars to manage.</p>
+        <p>Loading your vehicles...</p>
       ) : (
-        <div className="owner-section">
-          <div className="owner-grid">
-            {cars.map((car) => (
-              <div key={car.id} className="register-car-card">
-                <h3 style={{ marginBottom: "16px" }}>{car.model}</h3>
-                <div className="register-form">
-                  <label>Pickup Location</label>
-                  <input
-                    type="text"
-                    id={`loc-${car.id}`}
-                    defaultValue={car.location}
-                  />
-                </div>
-                <div className="register-form">
-                  <label>Price per day (ETH)</label>
-                  <input
-                    type="text"
-                    id={`price-${car.id}`}
-                    defaultValue={car.pricePerDay}
-                  />
-                </div>
-                <div className="car-actions-row">
-                  <button 
-                    className="primary-btn small-btn"
-                    onClick={() => {
-                      const l = document.getElementById(`loc-${car.id}`).value;
-                      const p = document.getElementById(`price-${car.id}`).value;
-                      handleUpdate(car.id, l, p);
-                    }}
-                  >
-                    Save
-                  </button>
-                  <button 
-                    className="secondary-btn small-btn"
-                    onClick={() => handleMakeUnavailable(car.id)}
-                  >
-                    Unavailable
-                  </button>
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
+          gap: "25px" 
+        }}>
+          {cars.length > 0 ? (
+            cars.map((car) => (
+              <div key={car.id} style={{ 
+                background: "#1e1e24", 
+                padding: "25px", 
+                borderRadius: "15px", 
+                border: "1px solid #333",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
+              }}>
+                <h3 style={{ marginTop: 0, color: "#a855f7" }}>{car.model}</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.9rem" }}>
+                  <p style={{ margin: 0 }}><strong>Location:</strong> {car.location || "Not specified"}</p>
+                  <p style={{ margin: 0 }}><strong>Price/Day:</strong> {car.pricePerDay} ETH</p>
+                  <p style={{ margin: 0 }}>
+                    <strong>Status:</strong> 
+                    <span style={{ 
+                      marginLeft: "8px",
+                      color: car.status === 0 ? "#22c55e" : "#ef4444" 
+                    }}>
+                      {car.status === 0 ? "● Available" : "● Rented"}
+                    </span>
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
+            ))
+          ) : (
+            <p style={{ color: "#888" }}>You haven't registered any cars yet.</p>
+          )}
         </div>
       )}
     </div>
