@@ -1,0 +1,26 @@
+.earnings-heatmap {
+  padding: 20px;
+}
+
+.earnings-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 16px);
+  gap: 6px;
+}
+
+.heatmap-cell {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.empty-chart {
+  opacity: 0.6;
+  font-size: 14px;
+}

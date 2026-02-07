@@ -1,0 +1,33 @@
+.earnings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.earning-box {
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.earning-box p {
+  color: #a1a7c4;
+  margin-bottom: 6px;
+}
+
+.earning-box h3 {
+  font-size: 1.4rem;
+}
+
+.purple {
+  border: 1px solid rgba(124, 124, 255, 0.4);
+}
+
+.blue {
+  border: 1px solid rgba(79, 209, 255, 0.4);
+}
+
+.pink {
+  border: 1px solid rgba(255, 110, 199, 0.4);
+}

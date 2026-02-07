@@ -1,0 +1,45 @@
+.car-actions-row {
+  display: flex;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.small-btn {
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  min-width: 110px;
+}
+
+
+/* Secondary button (Unavailable) */
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  cursor: pointer;
+  padding: 15px;
+}
+
+/* Danger button (Delete) */
+.danger-btn {
+  background: rgba(255, 80, 80, 0.2);
+  border: 1px solid rgba(255, 80, 80, 0.4);
+  color: #ff9a9a;
+  cursor: pointer;
+}
+
+.owner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 24px;
+}
+
+.car-actions-row button {
+  height: 42px;              /* 🔑 uniform height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  border-radius: 999px;
+}
