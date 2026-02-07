@@ -35,7 +35,7 @@ export default function OwnerCars() {
       color: "white", 
       background: "#0f0f12", 
       minHeight: "100vh",
-      width: "100%", // Use full width
+      width: "100%", // Ensures the page container uses all horizontal space
       boxSizing: "border-box"
     }}>
       
@@ -51,7 +51,7 @@ export default function OwnerCars() {
             borderRadius: "8px",
             cursor: "pointer",
             fontWeight: "bold",
-            display: "flex",
+            display: "inline-flex",
             alignItems: "center",
             gap: "8px"
           }}
@@ -60,15 +60,17 @@ export default function OwnerCars() {
         </button>
       </div>
 
-      <h1 style={{ marginBottom: "2rem", fontSize: "2rem" }}>My Full Fleet</h1>
+      <h1 style={{ marginBottom: "2.5rem", fontSize: "2.2rem", fontWeight: "bold" }}>
+        My Full Fleet
+      </h1>
 
       {loading ? (
-        <p>Loading vehicles...</p>
+        <p>Loading your vehicles...</p>
       ) : (
-        /* GRID SYSTEM FIX: Forces cards to use the empty horizontal space */
+        /* GRID SYSTEM: This forces horizontal spreading */
         <div style={{ 
           display: "grid", 
-          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", 
+          gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", 
           gap: "25px",
           width: "100%" 
         }}>
@@ -86,8 +88,8 @@ export default function OwnerCars() {
                 minHeight: "220px"
               }}>
                 <div>
-                  <h3 style={{ marginTop: 0, color: "#a855f7" }}>{car.model}</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.95rem" }}>
+                  <h3 style={{ marginTop: 0, color: "#a855f7", fontSize: "1.4rem" }}>{car.model}</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     <p style={{ margin: 0 }}><strong>Location:</strong> {car.location || "Not specified"}</p>
                     <p style={{ margin: 0 }}><strong>Price/Day:</strong> {car.pricePerDay} ETH</p>
                   </div>
@@ -107,7 +109,7 @@ export default function OwnerCars() {
               </div>
             ))
           ) : (
-            <p style={{ color: "#888" }}>No cars registered yet.</p>
+            <p style={{ color: "#888" }}>You haven't registered any cars yet.</p>
           )}
         </div>
       )}
