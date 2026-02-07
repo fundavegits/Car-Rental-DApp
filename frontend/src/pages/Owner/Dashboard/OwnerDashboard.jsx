@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Added for navigation
 import { Web3Context } from "../../../context/Web3Context";
 import {
   fetchAllCars,
@@ -7,12 +8,12 @@ import {
 
 import "./OwnerDashboard.css";
 import EarningsOverview from "./components/EarningsOverview";
-import MyCarsPreview from "./components/MyCarsPreview";
 import ActiveRentals from "./components/ActiveRentals";
 import Notifications from "./components/Notifications";
 
 export default function OwnerDashboard() {
   const { signer, account } = useContext(Web3Context);
+  const navigate = useNavigate(); // Hook for the View All button
 
   const [model, setModel] = useState("");
   const [location, setLocation] = useState("");
@@ -27,18 +28,9 @@ export default function OwnerDashboard() {
     try {
       const allCars = await fetchAllCars();
       
-      // DEBUG LOGS: Open your browser console (F12) to see these
-      console.log("--- Dashboard Sync Check ---");
-      console.log("Connected Account:", account);
-      console.log("Total Cars on Contract:", allCars.length);
-      console.log("Raw Data from Chain:", allCars);
-
-      // Filtering with case-insensitivity
       const owned = allCars.filter(
         (car) => car.owner.toLowerCase() === account.toLowerCase()
       );
-
-      console.log("Filtered Cars for this Owner:", owned);
 
       setCars(
         owned.map((car) => ({
@@ -80,7 +72,6 @@ export default function OwnerDashboard() {
       setLocation("");
       setPricePerDay("");
       
-      // Brief delay to allow Sepolia nodes to index the new block
       setTimeout(async () => {
         await loadOwnerCars();
       }, 2000);
@@ -95,13 +86,15 @@ export default function OwnerDashboard() {
   };
 
   return (
-    <div className="page owner-page">
+    <div className="page owner-page" style={{ background: "#0f0f12", minHeight: "100vh" }}>
       <h1 className="owner-title">Owner Dashboard</h1>
 
+      {/* Stats Section */}
       <div className="section">
         <EarningsOverview cars={cars} />
       </div>
 
+      {/* Registration Section */}
       <div className="section register-car-card">
         <h3>Register New Car</h3>
         <div className="register-form">
@@ -133,8 +126,52 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
-      <div className="section">
-        <MyCarsPreview cars={cars ? cars.slice(0, 3) : []} />
+      {/* UPDATED: My Cars Portion to use horizontal space */}
+      <div className="section" style={{ 
+        background: "rgba(255, 255, 255, 0.05)", 
+        padding: "20px", 
+        borderRadius: "15px",
+        border: "1px solid #222"
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+          <h3 style={{ margin: 0 }}>My Registered Cars</h3>
+          <button 
+            onClick={() => navigate("/owner/cars")}
+            style={{
+              background: "linear-gradient(90deg, #7c3aed 0%, #db2777 100%)",
+              border: "none",
+              color: "white",
+              padding: "5px 15px",
+              borderRadius: "15px",
+              cursor: "pointer",
+              fontSize: "0.8rem",
+              fontWeight: "bold"
+            }}
+          >
+            View All
+          </button>
+        </div>
+
+        {/* Horizontal Flex Grid */}
+        <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+          {cars.length > 0 ? (
+            cars.slice(0, 4).map((car, index) => (
+              <div key={index} style={{
+                background: "#1e1e24",
+                padding: "15px",
+                borderRadius: "10px",
+                flex: "1 1 200px",
+                border: "1px solid #333",
+                textAlign: "center"
+              }}>
+                <p style={{ margin: "0 0 5px 0", fontWeight: "bold" }}>{car.model}</p>
+                <small style={{ color: "#a855f7" }}>Status: {car.status === 0 ? "Available" : "Rented"}</small>
+              </div>
+            ))
+          ) : (
+            <p style={{ color: "#666" }}>No cars registered yet.</p>
+          )}
+        </div>
       </div>
 
       <div className="section grid-2">
