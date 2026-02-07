@@ -31,20 +31,20 @@ export default function OwnerCars() {
 
   return (
     <div className="page owner-cars-page" style={{ 
-      padding: "3rem", 
+      padding: "40px", 
       color: "white", 
       background: "#0f0f12", 
       minHeight: "100vh",
-      width: "100%", // Explicitly uses the whole screen width
+      width: "100%", // Forces full horizontal use
       boxSizing: "border-box"
     }}>
       
-      <div style={{ marginBottom: "3rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
         <h1 style={{ margin: 0, fontSize: "2.5rem", fontWeight: "bold" }}>My Full Fleet</h1>
         <button 
           onClick={() => navigate("/owner")}
           style={{
-            padding: "10px 25px",
+            padding: "12px 24px",
             background: "rgba(255, 255, 255, 0.1)",
             color: "white",
             border: "1px solid #444",
@@ -58,9 +58,9 @@ export default function OwnerCars() {
       </div>
 
       {loading ? (
-        <p>Syncing with Blockchain...</p>
+        <p>Loading fleet from blockchain...</p>
       ) : (
-        /* THE HORIZONTAL GRID FIX */
+        /* GRID: Spreads cards across the whole screen */
         <div style={{ 
           display: "grid", 
           gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", 
@@ -77,25 +77,25 @@ export default function OwnerCars() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
-              minHeight: "240px"
+              minHeight: "250px"
             }}>
               <div>
                 <h3 style={{ marginTop: 0, color: "#a855f7", fontSize: "1.6rem" }}>{car.model}</h3>
-                <p style={{ color: "#888" }}>Location: {car.location || "Delhi"}</p>
+                <p style={{ color: "#ccc" }}>Location: {car.location || "Not specified"}</p>
                 <p><strong>Price:</strong> {car.pricePerDay} ETH / Day</p>
               </div>
               
               <div style={{ 
                 marginTop: "20px",
                 padding: "12px",
-                borderRadius: "10px",
+                borderRadius: "12px",
                 textAlign: "center",
                 background: car.status === 0 ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
                 color: car.status === 0 ? "#22c55e" : "#ef4444",
                 fontWeight: "bold",
                 border: "1px solid currentColor"
               }}>
-                {car.status === 0 ? "Available" : "Currently Rented"}
+                {car.status === 0 ? "● Available" : "● Currently Rented"}
               </div>
             </div>
           ))}

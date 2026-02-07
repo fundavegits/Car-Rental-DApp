@@ -1,8 +1,17 @@
+/* Removed max-width and centering to allow horizontal spreading */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left; /* Essential to stop items from stacking in the center */
+}
+
+/* Ensure the body doesn't limit the width of the app */
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: block; 
 }
 
 .logo {
@@ -19,12 +28,8 @@
 }
 
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
