@@ -3,10 +3,14 @@
   background: radial-gradient(circle at top, #151a33, var(--bg-primary));
   padding: 32px;
   color: var(--text-primary);
+  width: 100%; /* Ensures page uses full browser width */
+  box-sizing: border-box;
 }
 
 .section {
   margin-bottom: 32px;
+  width: 100%; /* Forces sections to span the full width */
+  display: block; /* Allows internal components to use Grid/Flex */
 }
 
 .card {

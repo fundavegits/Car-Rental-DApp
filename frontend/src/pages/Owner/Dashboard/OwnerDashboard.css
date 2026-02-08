@@ -2,29 +2,23 @@
 
 .owner-page {
   min-height: 100vh;
-  width: 94vw;
-  align-items: center;
-  justify-content: center;
+  width: 100%; /* Unlocks full width */
   background: radial-gradient(circle at top, #151a33, #0b0f1a);
   padding: 32px;
   color: white;
+  display: block; /* Removes flex centering */
+  box-sizing: border-box;
 }
 
 .owner-title {
   font-size: 2rem;
   margin-bottom: 24px;
+  text-align: left;
 }
 
 .owner-section {
   margin-bottom: 28px;
 }
-
-.owner-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-}
-
 
 .register-car-card {
   background: rgba(255, 255, 255, 0.06);
