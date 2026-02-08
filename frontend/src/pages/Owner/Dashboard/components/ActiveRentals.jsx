@@ -5,7 +5,7 @@ const ActiveRentals = ({ rentals }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="active-rentals-container" style={{ width: '100%', marginTop: '30px' }}>
+    <div className="active-rentals-section" style={{ width: '100%', marginTop: '40px' }}>
       <div style={{ 
         display: "flex", 
         justifyContent: "space-between", 
@@ -30,6 +30,7 @@ const ActiveRentals = ({ rentals }) => {
         </button>
       </div>
 
+      {/* HORIZONTAL SPREAD: Flex container to match 'My Registered Cars' */}
       <div style={{ 
         display: "flex", 
         gap: "15px", 
@@ -42,16 +43,34 @@ const ActiveRentals = ({ rentals }) => {
               background: "rgba(255, 255, 255, 0.05)",
               padding: "20px",
               borderRadius: "12px",
-              flex: "1 1 calc(25% - 15px)",
-              minWidth: "180px",
+              flex: "1 1 calc(25% - 15px)", // Forces horizontal growth
+              minWidth: "220px",
               border: "1px solid #333",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center"
             }}>
-              <p style={{ margin: "0 0 5px 0", fontWeight: "bold", color: "white" }}>{rental.carModel}</p>
-              <p style={{ margin: 0, fontSize: "0.8rem", color: "#888" }}>Renter: {rental.renter.slice(0,6)}...{rental.renter.slice(-4)}</p>
+              <p style={{ margin: "0 0 8px 0", fontWeight: "bold", color: "white", fontSize: "1rem" }}>
+                {rental.carModel}
+              </p>
+              <div style={{
+                padding: "4px 12px",
+                borderRadius: "12px",
+                fontSize: "0.75rem",
+                background: "rgba(239, 68, 68, 0.1)",
+                color: "#ef4444",
+                fontWeight: "600",
+                border: "1px solid rgba(239, 68, 68, 0.2)"
+              }}>
+                ● Currently Rented
+              </div>
             </div>
           ))
         ) : (
-          <p style={{ color: "#666" }}>No active rentals at the moment.</p>
+          <div style={{ width: "100%", textAlign: "center", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px" }}>
+            <p style={{ color: "#666", margin: 0 }}>No active rentals found.</p>
+          </div>
         )}
       </div>
     </div>
