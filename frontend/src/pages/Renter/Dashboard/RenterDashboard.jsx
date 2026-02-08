@@ -6,9 +6,15 @@ import CurrentRental from "./components/CurrentRentals";
 import RentalHistory from "./components/RentalHistory";
 
 export default function RenterDashboard() {
-  const [filters, setFilters] = useState(null);
+  // Enhanced filters state to track dates and location
+  const [filters, setFilters] = useState({
+    location: "",
+    startDate: "",
+    endDate: ""
+  });
 
   const handleSearch = (searchData) => {
+    // searchData should contain { location, startDate, endDate }
     setFilters(searchData);
   };
 
@@ -16,14 +22,16 @@ export default function RenterDashboard() {
     <div className="renter-page">
       <div className="renter-container">
         <h1 className="renter-title">Renter Dashboard</h1>
+        
         <div className="renter-section">
-          {/* Pass the handler to capture search inputs */}
           <SearchSection onSearch={handleSearch} />
         </div>
+
         <div className="renter-section">
-          {/* Pass filters to the list */}
+          {/* We pass the global selected dates to AvailableCars */}
           <AvailableCars filters={filters} />
         </div>
+
         <div className="renter-grid">
           <CurrentRental />
           <RentalHistory />

@@ -12,27 +12,17 @@ export default function AvailableCars({ filters }) {
     try {
       const allCars = await fetchAllCars();
       
-      // DEBUG: Check the status of cars coming from the blockchain
-      console.log("Raw cars from chain:", allCars);
-
       let filtered = allCars.filter((car) => {
-        /**
-         * 1. Status Filter: Only show cars that are available.
-         * In most Smart Contracts: 0 = Available, 1 = Booked/Rented.
-         * We check both string and number just in case.
-         */
-        const isAvailable = car.status === "Available" || Number(car.status) === 0;
+        // 1. Status Filter: Only show Available (0) cars
+        const isAvailable = Number(car.status) === 0;
 
-        // 2. Search Filters (Model and Location)
-        const matchModel = filters && filters.model
-          ? car.model.toLowerCase().includes(filters.model.toLowerCase())
-          : true;
-        
+        // 2. Location Filter
         const matchLocation = filters && filters.location
           ? car.location.toLowerCase().includes(filters.location.toLowerCase())
           : true;
 
-        return isAvailable && matchModel && matchLocation;
+        // Note: Model filtering can be added back if needed
+        return isAvailable && matchLocation;
       });
       
       setCars(filtered);
@@ -60,7 +50,12 @@ export default function AvailableCars({ filters }) {
       {cars.length > 0 ? (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "12px" }}>
           {cars.map((car) => (
-            <CarCard key={car.id} car={car} />
+            /* PASSING FILTERS: Now CarCard knows the selected dates */
+            <CarCard 
+              key={car.id} 
+              car={car} 
+              bookingDates={filters} 
+            />
           ))}
         </div>
       ) : (

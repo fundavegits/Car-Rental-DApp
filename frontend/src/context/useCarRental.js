@@ -7,18 +7,11 @@ const ABI = artifact.abi;
 
 /* ---------------- CONTRACT INSTANCES ---------------- */
 
-/**
- * Creates a read-only contract instance using your centralized Alchemy RPC.
- * This automatically pulls from your .env file.
- */
 export function getReadContract() {
   const provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
   return new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
 }
 
-/**
- * Creates a write-capable contract instance using the user's MetaMask signer.
- */
 export function getWriteContract(signer) {
   if (!signer) throw new Error("Signer required - Please connect MetaMask");
   return new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
@@ -26,9 +19,6 @@ export function getWriteContract(signer) {
 
 /* ---------------- READ HELPERS ---------------- */
 
-/**
- * Fetches all cars from the blockchain and formats them for the UI.
- */
 export async function fetchAllCars() {
   const contract = getReadContract();
   try {
@@ -42,7 +32,7 @@ export async function fetchAllCars() {
         id: car.id.toString(),
         owner: car.owner,
         model: car.model,
-        location: car.pickupLocation, // Mapped to match ABI exactly
+        location: car.pickupLocation,
         pricePerDay: ethers.formatEther(car.pricePerDay),
         status: Number(car.status), 
         earnings: ethers.formatEther(car.earnings)
@@ -55,9 +45,6 @@ export async function fetchAllCars() {
   }
 }
 
-/**
- * Retrieves details for a specific active rental.
- */
 export async function getActiveRental(carId) {
   const contract = getReadContract();
   try {
@@ -79,14 +66,12 @@ export async function getActiveRental(carId) {
 
 export async function registerCar(signer, model, location, priceEth) {
   const contract = getWriteContract(signer);
-  
   const tx = await contract.registerCar(
     model,
     location,
     ethers.parseUnits(priceEth.toString(), "ether"),
     { gasLimit: 500000 } 
   );
-
   return await tx.wait();
 }
 
@@ -115,13 +100,30 @@ export async function endRental(signer, carId) {
 
 /* ---------------- RENTER ACTIONS ---------------- */
 
+/**
+ * FIXED: Updated to convert Javascript Date objects into Unix Timestamps
+ */
 export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   const contract = getWriteContract(signer);
 
-  const tx = await contract.rentCar(carId, startDate, endDate, {
-    value: ethers.parseUnits(totalEth.toString(), "ether"),
-    gasLimit: 1000000 
-  });
+  // Convert human-readable dates to Unix timestamps (seconds) as required by Solidity
+  const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+  const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
+
+  // Safety check to ensure the end date is after the start date
+  if (endTimestamp <= startTimestamp) {
+    throw new Error("End date must be after the start date.");
+  }
+
+  const tx = await contract.rentCar(
+    carId, 
+    startTimestamp, 
+    endTimestamp, 
+    {
+      value: ethers.parseUnits(totalEth.toString(), "ether"),
+      gasLimit: 1000000 
+    }
+  );
 
   return await tx.wait();
 }

@@ -3,9 +3,29 @@ import { Web3Context } from "../../../../context/Web3Context";
 import { rentCar } from "../../../../context/useCarRental";
 import "./CarCard.css";
 
-export default function CarCard({ car }) {
+// Now receiving bookingDates (filters) from AvailableCars
+export default function CarCard({ car, bookingDates }) {
   const { signer, account } = useContext(Web3Context);
   const [loading, setLoading] = useState(false);
+
+  // 1. Calculate the number of days selected
+  const calculateDays = () => {
+    if (!bookingDates?.startDate || !bookingDates?.endDate) return 0;
+    
+    const start = new Date(bookingDates.startDate);
+    const end = new Date(bookingDates.endDate);
+    
+    // Difference in milliseconds
+    const diffTime = end - start;
+    // Convert to days (rounding up to ensure at least 1 day)
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const days = calculateDays();
+  // 2. Calculate the total cost in ETH
+  const totalCost = (days * parseFloat(car.pricePerDay)).toFixed(4);
 
   const handleRentClick = async () => {
     if (!account || !signer) {
@@ -13,25 +33,28 @@ export default function CarCard({ car }) {
       return;
     }
 
+    if (days <= 0) {
+      alert("Please select a valid date range in the search section first!");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // Simple 1-day rental logic for testing
-      const startTimestamp = Math.floor(Date.now() / 1000); 
-      const endTimestamp = startTimestamp + 86400; // + 24 hours in seconds
+      // Pass the actual dates from filters to our context function
+      await rentCar(
+        signer, 
+        car.id, 
+        bookingDates.startDate, 
+        bookingDates.endDate, 
+        totalCost
+      );
 
-      // The total price is just the daily rate for this 1-day test
-      const totalEth = car.pricePerDay;
-
-      console.log(`Attempting to rent car ${car.id} for ${totalEth} ETH`);
-
-      await rentCar(signer, car.id, startTimestamp, endTimestamp, totalEth);
-
-      alert("Success! Car rented on Sepolia.");
-      window.location.reload(); // Refresh to update car status
+      alert(`Success! Rented for ${days} days. Total: ${totalCost} ETH`);
+      window.location.reload(); 
     } catch (err) {
       console.error("Rental transaction failed:", err);
-      alert(err.reason || "Transaction failed. Check console.");
+      alert(err.message || "Transaction failed.");
     } finally {
       setLoading(false);
     }
@@ -42,17 +65,36 @@ export default function CarCard({ car }) {
       <div className="car-info">
         <h4>{car.model}</h4>
         <p>📍 {car.location}</p>
-        <p>Ξ {car.pricePerDay} / day</p>
-        <span className="status available">Available</span>
+        <p style={{ fontWeight: "bold", color: "#a855f7" }}>Ξ {car.pricePerDay} / day</p>
+        
+        {/* 3. Display specific booking details to the user */}
+        {days > 0 ? (
+          <div style={{ marginTop: "10px", padding: "8px", background: "rgba(168, 85, 247, 0.1)", borderRadius: "8px", fontSize: "0.8rem" }}>
+            <p style={{ margin: 0 }}>📅 <strong>{days} Days</strong> selected</p>
+            <p style={{ margin: 0 }}>💰 Total: <strong>{totalCost} ETH</strong></p>
+          </div>
+        ) : (
+          <p style={{ fontSize: "0.75rem", color: "#ef4444", marginTop: "10px" }}>
+            ⚠ Select dates to see total price
+          </p>
+        )}
       </div>
       
       <button 
         className="primary-btn" 
         onClick={handleRentClick}
-        disabled={loading}
-        style={{ marginTop: "12px", width: "100%", padding: "8px", fontSize: "0.8rem" }}
+        // Disable button if no valid dates are picked
+        disabled={loading || days <= 0}
+        style={{ 
+          marginTop: "12px", 
+          width: "100%", 
+          padding: "10px", 
+          fontSize: "0.85rem",
+          opacity: (loading || days <= 0) ? 0.6 : 1,
+          cursor: (loading || days <= 0) ? "not-allowed" : "pointer"
+        }}
       >
-        {loading ? "Processing..." : "Rent Now"}
+        {loading ? "Processing..." : days > 0 ? `Rent for ${totalCost} ETH` : "Select Dates"}
       </button>
     </div>
   );
