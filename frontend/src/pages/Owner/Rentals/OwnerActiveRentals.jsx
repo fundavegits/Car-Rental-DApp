@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Web3Context } from "../../../context/Web3Context";
-// FIXED: Using fetchAllCars as the source of truth
 import { fetchAllCars } from "../../../context/useCarRental";
 
 export default function OwnerActiveRentals() {
@@ -14,7 +13,6 @@ export default function OwnerActiveRentals() {
     if (!account) return;
     try {
       setLoading(true);
-      // Fetching all cars and filtering for rented status (1)
       const allData = await fetchAllCars(); 
       const activeOnes = allData.filter(
         (item) => 
@@ -35,20 +33,30 @@ export default function OwnerActiveRentals() {
     }
   }, [account]);
 
+  // Handler to prevent default behavior and navigate correctly
+  const handleBackToDashboard = (e) => {
+    e.preventDefault();
+    navigate("/owner/dashboard"); // Updated to match dashboard route
+  };
+
   return (
     <div className="page" style={{ padding: "40px", background: "#0f0f12", minHeight: "100vh" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
         <h1 style={{ color: "white", margin: 0 }}>Active Rentals Fleet</h1>
         <button 
-          onClick={() => navigate("/owner/dashboard")}
+          onClick={handleBackToDashboard}
           style={{
             background: "rgba(255, 255, 255, 0.1)",
             border: "1px solid #333",
             color: "white",
             padding: "10px 20px",
             borderRadius: "12px",
-            cursor: "pointer"
+            cursor: "pointer",
+            fontWeight: "bold",
+            transition: "all 0.3s ease"
           }}
+          onMouseOver={(e) => e.target.style.background = "rgba(255, 255, 255, 0.2)"}
+          onMouseOut={(e) => e.target.style.background = "rgba(255, 255, 255, 0.1)"}
         >
           Back to Dashboard
         </button>
@@ -82,9 +90,10 @@ export default function OwnerActiveRentals() {
                     padding: "8px",
                     background: "rgba(239, 68, 68, 0.1)",
                     borderRadius: "8px",
-                    textAlign: "center"
+                    textAlign: "center",
+                    border: "1px solid rgba(239, 68, 68, 0.2)"
                   }}>
-                    Status: Currently Rented
+                    ● Currently Rented
                   </p>
                 </div>
               </div>
