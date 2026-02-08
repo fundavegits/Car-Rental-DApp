@@ -5,6 +5,8 @@ import OwnerDashboard from "./pages/Owner/Dashboard/OwnerDashboard";
 import RenterDashboard from "./pages/Renter/Dashboard/RenterDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OwnerCars from "./pages/Owner/Cars/OwnerCars";
+/* NEW IMPORT: Added for the active rentals full view */
+import OwnerActiveRentals from "./pages/Owner/Rentals/OwnerActiveRentals";
 
 // This component handles the shared Navigation Bar and Wallet Logic
 const Navigation = () => {
@@ -103,6 +105,16 @@ export default function App() {
         />
         {/* Navigation to see all cars */}
         <Route path="/owner/cars" element={<OwnerCars />} />
+        
+        {/* NEW ROUTE: Added for seeing all active rentals */}
+        <Route 
+          path="/owner/rentals" 
+          element={
+            <ProtectedRoute role="owner">
+              <OwnerActiveRentals />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Renter specific routes */}
         <Route
