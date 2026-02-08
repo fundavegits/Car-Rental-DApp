@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Web3Context } from "../../../context/Web3Context";
+// FIXED: Using fetchAllCars to prevent Vercel build errors
 import { fetchAllCars } from "../../../context/useCarRental";
 
 export default function OwnerActiveRentals() {
@@ -33,10 +34,10 @@ export default function OwnerActiveRentals() {
     }
   }, [account]);
 
-  // FIXED NAVIGATION: Uses the exact dashboard path to prevent login redirect
+  // FIXED NAVIGATION: Matches line 102 of your App.jsx
   const handleBackToDashboard = (e) => {
     e.preventDefault();
-    navigate("/owner/dashboard"); 
+    navigate("/owner"); 
   };
 
   return (
