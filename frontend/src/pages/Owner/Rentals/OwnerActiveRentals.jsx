@@ -7,9 +7,9 @@ const OwnerActiveRentals = ({ activeRentals = [] }) => {
   return (
     <div className="min-h-screen bg-[#050505] text-white p-6 md:p-10">
       
-      {/* HEADER SECTION: Title left, Small Button right */}
+      {/* HEADER SECTION: Title on left, Small Button on right */}
       <div className="flex justify-between items-center mb-12 w-full">
-        <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-white">
+        <h1 className="text-5xl font-bold tracking-tight text-white">
           Active Rentals
         </h1>
 
@@ -20,15 +20,15 @@ const OwnerActiveRentals = ({ activeRentals = [] }) => {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span className="text-sm font-medium whitespace-now8">Back to Dashboard</span>
+          <span className="text-sm font-medium">Back to Dashboard</span>
         </button>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 border-b border-gray-900 pb-4">
         <h2 className="text-2xl font-semibold text-gray-400">Fleet</h2>
       </div>
 
-      {/* RENTAL GRID: Restored mapping for car details */}
+      {/* RENTAL GRID: Restored the car mapping logic */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {activeRentals.length > 0 ? (
           activeRentals.map((car, index) => (
@@ -36,7 +36,7 @@ const OwnerActiveRentals = ({ activeRentals = [] }) => {
               <div className="mb-4">
                 <h3 className="text-xl font-bold capitalize mb-1">{car.carName || car.brand}</h3>
                 <p className="text-gray-500 text-sm flex items-center gap-1">
-                  <span className="text-red-500">📍</span> {car.location || 'delhi'}
+                  <span className="text-red-500">📍</span> {car.location || 'Unknown'}
                 </p>
               </div>
 
