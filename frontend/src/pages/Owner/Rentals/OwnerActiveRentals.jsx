@@ -33,10 +33,10 @@ export default function OwnerActiveRentals() {
     }
   }, [account]);
 
-  // Handler to prevent default behavior and navigate correctly
+  // FIXED NAVIGATION: Uses the exact dashboard path to prevent login redirect
   const handleBackToDashboard = (e) => {
     e.preventDefault();
-    navigate("/owner/dashboard"); // Updated to match dashboard route
+    navigate("/owner/dashboard"); 
   };
 
   return (
@@ -46,19 +46,17 @@ export default function OwnerActiveRentals() {
         <button 
           onClick={handleBackToDashboard}
           style={{
-            background: "rgba(255, 255, 255, 0.1)",
-            border: "1px solid #333",
+            background: "linear-gradient(90deg, #7c3aed 0%, #db2777 100%)",
+            border: "none",
             color: "white",
-            padding: "10px 20px",
+            padding: "10px 25px",
             borderRadius: "12px",
             cursor: "pointer",
             fontWeight: "bold",
-            transition: "all 0.3s ease"
+            boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)"
           }}
-          onMouseOver={(e) => e.target.style.background = "rgba(255, 255, 255, 0.2)"}
-          onMouseOut={(e) => e.target.style.background = "rgba(255, 255, 255, 0.1)"}
         >
-          Back to Dashboard
+          ← Back to Dashboard
         </button>
       </div>
 
@@ -77,11 +75,9 @@ export default function OwnerActiveRentals() {
                 padding: "25px",
                 borderRadius: "15px",
                 border: "1px solid #333",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
               }}>
                 <h3 style={{ color: "white", marginTop: 0 }}>{rental.model}</h3>
                 <div style={{ color: "#aaa", fontSize: "0.9rem" }}>
-                  <p>📍 Location: {rental.location || "Not Specified"}</p>
                   <p>💰 Daily Rate: {rental.pricePerDay} ETH</p>
                   <p style={{ 
                     marginTop: "15px", 
@@ -90,8 +86,7 @@ export default function OwnerActiveRentals() {
                     padding: "8px",
                     background: "rgba(239, 68, 68, 0.1)",
                     borderRadius: "8px",
-                    textAlign: "center",
-                    border: "1px solid rgba(239, 68, 68, 0.2)"
+                    textAlign: "center"
                   }}>
                     ● Currently Rented
                   </p>
