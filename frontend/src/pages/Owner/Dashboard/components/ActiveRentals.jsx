@@ -30,37 +30,45 @@ const ActiveRentals = ({ rentals }) => {
         </button>
       </div>
 
-      {/* HORIZONTAL SPREAD: Flex container to match 'My Registered Cars' */}
+      {/* FIXED CONTAINER: Forces items to spread horizontally */}
       <div style={{ 
         display: "flex", 
-        gap: "15px", 
-        flexWrap: "wrap", 
+        flexDirection: "row", // Ensures horizontal flow
+        gap: "20px", 
+        flexWrap: "wrap", // Allows wrapping to next line if screen is small
         width: "100%" 
       }}>
         {rentals && rentals.length > 0 ? (
           rentals.slice(0, 4).map((rental, index) => (
             <div key={index} style={{
               background: "rgba(255, 255, 255, 0.05)",
-              padding: "20px",
-              borderRadius: "12px",
-              flex: "1 1 calc(25% - 15px)", // Forces horizontal growth
-              minWidth: "220px",
+              padding: "25px",
+              borderRadius: "15px",
+              flex: "1 1 calc(25% - 20px)", // Forces 4 items per row on large screens
+              minWidth: "250px", // Prevents cards from getting too thin
               border: "1px solid #333",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center"
+              boxSizing: "border-box"
             }}>
-              <p style={{ margin: "0 0 8px 0", fontWeight: "bold", color: "white", fontSize: "1rem" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "white", fontSize: "1.1rem" }}>
                 {rental.carModel}
-              </p>
-              <div style={{
-                padding: "4px 12px",
-                borderRadius: "12px",
-                fontSize: "0.75rem",
+              </h4>
+              
+              <div style={{ fontSize: "0.85rem", color: "#ccc", marginBottom: "15px" }}>
+                <p style={{ margin: "5px 0" }}>👤 Renter: {rental.renter.slice(0,6)}...{rental.renter.slice(-4)}</p>
+                <p style={{ margin: "5px 0" }}>📅 Return: {new Date(rental.expiry * 1000).toLocaleDateString()}</p>
+              </div>
+
+              <div style={{ 
+                marginTop: "auto",
+                padding: "8px",
+                borderRadius: "8px",
+                textAlign: "center",
                 background: "rgba(239, 68, 68, 0.1)",
                 color: "#ef4444",
-                fontWeight: "600",
+                fontWeight: "bold",
+                fontSize: "0.8rem",
                 border: "1px solid rgba(239, 68, 68, 0.2)"
               }}>
                 ● Currently Rented
@@ -68,7 +76,7 @@ const ActiveRentals = ({ rentals }) => {
             </div>
           ))
         ) : (
-          <div style={{ width: "100%", textAlign: "center", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px" }}>
+          <div style={{ width: "100%", textAlign: "center", padding: "40px", background: "rgba(255,255,255,0.02)", borderRadius: "15px" }}>
             <p style={{ color: "#666", margin: 0 }}>No active rentals found.</p>
           </div>
         )}
