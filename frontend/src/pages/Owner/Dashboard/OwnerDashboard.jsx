@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; 
 import { Web3Context } from "../../../context/Web3Context";
 import {
   fetchAllCars,
@@ -13,7 +13,7 @@ import Notifications from "./components/Notifications";
 
 export default function OwnerDashboard() {
   const { signer, account } = useContext(Web3Context);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
 
   const [model, setModel] = useState("");
   const [location, setLocation] = useState("");
@@ -47,7 +47,6 @@ export default function OwnerDashboard() {
   const handleRegisterCar = async () => {
     if (!model || !location || !pricePerDay) return alert("Please fill all fields");
     if (!signer) return alert("Wallet not connected");
-
     try {
       setLoading(true);
       await registerCarOnChain(signer, model, location, pricePerDay);
@@ -62,7 +61,7 @@ export default function OwnerDashboard() {
   };
 
   return (
-    <div className="page owner-page" style={{ background: "#0f0f12", minHeight: "100vh", padding: "20px" }}>
+    <div className="page owner-page" style={{ background: "#0f0f12", minHeight: "100vh", padding: "20px", width: "100%", boxSizing: "border-box" }}>
       <h1 className="owner-title">Owner Dashboard</h1>
 
       <div className="section">
@@ -81,10 +80,11 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
-      <div className="section" style={{ background: "rgba(255, 255, 255, 0.05)", padding: "20px", borderRadius: "15px", border: "1px solid #222", marginBottom: "20px" }}>
+      {/* Registered Cars Section */}
+      <div className="section" style={{ background: "rgba(255, 255, 255, 0.05)", padding: "20px", borderRadius: "15px", border: "1px solid #222", marginBottom: "20px", width: "100%" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
           <h3 style={{ margin: 0 }}>My Registered Cars</h3>
-          <button onClick={() => navigate("/owner/cars")} style={{ background: "linear-gradient(90deg, #7c3aed 0%, #db2777 100%)", border: "none", color: "white", padding: "5px 15px", borderRadius: "15px", cursor: "pointer", fontSize: "0.8rem", fontWeight: "bold" }}>
+          <button onClick={() => navigate("/owner/cars")} style={{ background: "linear-gradient(90deg, #7c3aed 0%, #db2777 100%)", border: "none", color: "white", padding: "8px 18px", borderRadius: "15px", cursor: "pointer", fontSize: "0.85rem", fontWeight: "bold" }}>
             View All
           </button>
         </div>
@@ -98,12 +98,12 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
-      {/* FIXED: Passing rentals data and removing restrictive grid class */}
-      <div className="section" style={{ background: "rgba(255, 255, 255, 0.05)", padding: "20px", borderRadius: "15px", border: "1px solid #222", marginBottom: "20px" }}>
+      {/* FIXED: Passing rentals data and REMOVED grid-2 class */}
+      <div className="section" style={{ background: "rgba(255, 255, 255, 0.05)", padding: "20px", borderRadius: "15px", border: "1px solid #222", marginBottom: "20px", width: "100%" }}>
         <ActiveRentals rentals={cars.filter(car => car.status === 1)} />
       </div>
 
-      <div className="section">
+      <div className="section" style={{ width: "100%" }}>
         <Notifications />
       </div>
     </div>
