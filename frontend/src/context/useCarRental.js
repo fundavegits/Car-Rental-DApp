@@ -93,15 +93,49 @@ export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   return await tx.wait();
 }
 
+/* ---------------- HISTORY FETCHING (NEWLY ADDED) ---------------- */
+
+export async function getOwnerHistory(address) {
+  const contract = getReadContract();
+  try {
+    const history = await contract.getOwnerHistory(address);
+    return history.map((rental) => ({
+      carId: rental.carId.toString(),
+      renter: rental.renter,
+      startDate: Number(rental.startDate),
+      endDate: Number(rental.endDate),
+      paid: ethers.formatEther(rental.paid),
+      active: rental.active,
+    }));
+  } catch (error) {
+    console.error("Error fetching owner history:", error);
+    return [];
+  }
+}
+
+export async function getRenterHistory(address) {
+  const contract = getReadContract();
+  try {
+    const history = await contract.getRenterHistory(address);
+    return history.map((rental) => ({
+      carId: rental.carId.toString(),
+      renter: rental.renter,
+      startDate: Number(rental.startDate),
+      endDate: Number(rental.endDate),
+      paid: ethers.formatEther(rental.paid),
+      active: rental.active,
+    }));
+  } catch (error) {
+    console.error("Error fetching renter history:", error);
+    return [];
+  }
+}
+
 /* ---------------- NOTIFICATIONS (EVENT LISTENERS) ---------------- */
 
-/**
- * Listens for both Registration and Rental events directly from the blockchain
- */
 export function listenToAllEvents(callback) {
   const contract = getReadContract();
   
-  // Listen for CarRegistered(uint256 indexed carId, address indexed owner)
   contract.on("CarRegistered", (carId, owner, event) => {
     callback({
       type: "REGISTRATION",
@@ -112,7 +146,6 @@ export function listenToAllEvents(callback) {
     });
   });
 
-  // Listen for CarRented(uint256 indexed carId, address indexed renter, ...)
   contract.on("CarRented", (carId, renter, startDate, endDate, paid, event) => {
     callback({
       type: "RENTAL",
