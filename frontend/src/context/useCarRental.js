@@ -100,17 +100,12 @@ export async function endRental(signer, carId) {
 
 /* ---------------- RENTER ACTIONS ---------------- */
 
-/**
- * FIXED: Updated to convert Javascript Date objects into Unix Timestamps
- */
 export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   const contract = getWriteContract(signer);
 
-  // Convert human-readable dates to Unix timestamps (seconds) as required by Solidity
   const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
   const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
 
-  // Safety check to ensure the end date is after the start date
   if (endTimestamp <= startTimestamp) {
     throw new Error("End date must be after the start date.");
   }
@@ -126,6 +121,28 @@ export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   );
 
   return await tx.wait();
+}
+
+/* ---------------- NOTIFICATIONS ---------------- */
+
+/**
+ * NEW: Event listener for real-time notifications
+ */
+export function listenForRentals(callback) {
+  const contract = getReadContract();
+  
+  // Listens for the CarRented event emitted by the smart contract
+  contract.on("CarRented", (carId, renter, startDate, endDate, paid, event) => {
+    callback({
+      carId: carId.toString(),
+      renter,
+      amount: ethers.formatEther(paid),
+      timestamp: new Date().toLocaleTimeString(),
+      txHash: event.log.transactionHash
+    });
+  });
+
+  return () => contract.removeAllListeners("CarRented");
 }
 
 /* ---------------- HISTORY ---------------- */

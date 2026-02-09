@@ -21,10 +21,12 @@ export default function OwnerDashboard() {
   const [cars, setCars] = useState([]); 
   const [loading, setLoading] = useState(false);
 
+  // Function to load only the cars owned by the connected wallet
   const loadOwnerCars = async () => {
     if (!account) return;
     try {
       const allCars = await fetchAllCars();
+      // Filter cars based on the owner's address
       const owned = allCars.filter(
         (car) => car.owner.toLowerCase() === account.toLowerCase()
       );
@@ -44,16 +46,24 @@ export default function OwnerDashboard() {
     if (account) loadOwnerCars();
   }, [account]);
 
+  // Handle the registration of a new vehicle on the blockchain
   const handleRegisterCar = async () => {
     if (!model || !location || !pricePerDay) return alert("Please fill all fields");
     if (!signer) return alert("Wallet not connected");
     try {
       setLoading(true);
       await registerCarOnChain(signer, model, location, pricePerDay);
-      setModel(""); setLocation(""); setPricePerDay("");
+      
+      // Reset form fields after success
+      setModel(""); 
+      setLocation(""); 
+      setPricePerDay("");
+      
+      // Delay refresh to allow blockchain state to update
       setTimeout(async () => await loadOwnerCars(), 2000);
       alert("Car registered successfully!");
     } catch (err) {
+      console.error("Registration failed:", err);
       alert("Transaction failed.");
     } finally {
       setLoading(false);
@@ -64,10 +74,12 @@ export default function OwnerDashboard() {
     <div className="page owner-page">
       <h1 className="owner-title">Owner Dashboard</h1>
 
+      {/* Overview of lifetime earnings */}
       <div className="section">
         <EarningsOverview cars={cars} />
       </div>
 
+      {/* Form to add a new car to the fleet */}
       <div className="section register-car-card">
         <h3>Register New Car</h3>
         <div className="register-form">
@@ -80,10 +92,19 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
+      {/* Display a preview of the owner's cars */}
       <div className="section" style={{ background: "rgba(255, 255, 255, 0.05)", padding: "20px", borderRadius: "15px", border: "1px solid #222" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
           <h3 style={{ margin: 0 }}>My Registered Cars</h3>
-          <button onClick={() => navigate("/owner/cars")} style={{ background: "linear-gradient(90deg, #7c3aed 0%, #db2777 100%)", border: "none", color: "white", padding: "8px 18px", borderRadius: "15px", cursor: "pointer", fontSize: "0.85rem", fontWeight: "bold" }}>
+          <button 
+            onClick={() => navigate("/owner/cars")} 
+            className="view-all-btn"
+            style={{ 
+              background: "linear-gradient(90deg, #7c3aed 0%, #db2777 100%)", 
+              border: "none", color: "white", padding: "8px 18px", 
+              borderRadius: "15px", cursor: "pointer", fontSize: "0.85rem", fontWeight: "bold" 
+            }}
+          >
             View All
           </button>
         </div>
@@ -92,7 +113,9 @@ export default function OwnerDashboard() {
             cars.slice(0, 4).map((car, index) => (
               <div key={index} style={{ background: "#1e1e24", padding: "15px", borderRadius: "10px", flex: "1 1 200px", border: "1px solid #333", textAlign: "center" }}>
                 <p style={{ margin: "0 0 5px 0", fontWeight: "bold" }}>{car.model}</p>
-                <small style={{ color: "#a855f7" }}>Status: {car.status === 0 ? "Available" : "Rented"}</small>
+                <small style={{ color: car.status === 0 ? "#10b981" : "#a855f7" }}>
+                  Status: {car.status === 0 ? "Available" : "Rented"}
+                </small>
               </div>
             ))
           ) : (
@@ -101,11 +124,12 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
-      {/* FIXED: Removed grid-2 and passed the rentals data */}
+      {/* Show cars that are currently being rented */}
       <div className="section">
         <ActiveRentals rentals={cars.filter(car => car.status === 1)} />
       </div>
 
+      {/* Real-time event notifications */}
       <div className="section">
         <Notifications />
       </div>
