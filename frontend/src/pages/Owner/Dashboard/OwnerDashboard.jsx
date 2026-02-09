@@ -52,6 +52,7 @@ export default function OwnerDashboard() {
     if (!signer) return alert("Wallet not connected");
     try {
       setLoading(true);
+      // Calls the smart contract registerCar function
       await registerCarOnChain(signer, model, location, pricePerDay);
       
       // Reset form fields after success
@@ -61,7 +62,7 @@ export default function OwnerDashboard() {
       
       // Delay refresh to allow blockchain state to update
       setTimeout(async () => await loadOwnerCars(), 2000);
-      alert("Car registered successfully!");
+      alert("Car registration submitted successfully!");
     } catch (err) {
       console.error("Registration failed:", err);
       alert("Transaction failed.");

@@ -2,7 +2,6 @@ import { ethers } from "ethers";
 import artifact from "../abi/CarRental.json";
 import { CONTRACT_ADDRESS, SEPOLIA_RPC } from "../abi/contract";
 
-// Access the ABI from the Hardhat artifact structure
 const ABI = artifact.abi;
 
 /* ---------------- CONTRACT INSTANCES ---------------- */
@@ -24,10 +23,8 @@ export async function fetchAllCars() {
   try {
     const count = Number(await contract.carCount());
     const cars = [];
-    
     for (let i = 1; i <= count; i++) {
       const car = await contract.cars(i);
-      
       cars.push({
         id: car.id.toString(),
         owner: car.owner,
@@ -40,7 +37,7 @@ export async function fetchAllCars() {
     }
     return cars;
   } catch (error) {
-    console.error("Error fetching cars from blockchain:", error);
+    console.error("Error fetching cars:", error);
     return [];
   }
 }
@@ -75,40 +72,14 @@ export async function registerCar(signer, model, location, priceEth) {
   return await tx.wait();
 }
 
-export async function updateCarDetails(signer, carId, location, priceEth) {
-  const contract = getWriteContract(signer);
-  const tx = await contract.updateCarDetails(
-    carId,
-    location,
-    ethers.parseUnits(priceEth.toString(), "ether"),
-    { gasLimit: 500000 }
-  );
-  return await tx.wait();
-}
-
-export async function setCarUnavailable(signer, carId) {
-  const contract = getWriteContract(signer);
-  const tx = await contract.setCarUnavailable(carId, { gasLimit: 300000 });
-  return await tx.wait();
-}
-
-export async function endRental(signer, carId) {
-  const contract = getWriteContract(signer);
-  const tx = await contract.endRental(carId, { gasLimit: 500000 });
-  return await tx.wait();
-}
-
 /* ---------------- RENTER ACTIONS ---------------- */
 
 export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   const contract = getWriteContract(signer);
-
   const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
   const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
 
-  if (endTimestamp <= startTimestamp) {
-    throw new Error("End date must be after the start date.");
-  }
+  if (endTimestamp <= startTimestamp) throw new Error("End date must be after start date.");
 
   const tx = await contract.rentCar(
     carId, 
@@ -119,40 +90,42 @@ export async function rentCar(signer, carId, startDate, endDate, totalEth) {
       gasLimit: 1000000 
     }
   );
-
   return await tx.wait();
 }
 
-/* ---------------- NOTIFICATIONS ---------------- */
+/* ---------------- NOTIFICATIONS (EVENT LISTENERS) ---------------- */
 
 /**
- * NEW: Event listener for real-time notifications
+ * Listens for both Registration and Rental events directly from the blockchain
  */
-export function listenForRentals(callback) {
+export function listenToAllEvents(callback) {
   const contract = getReadContract();
   
-  // Listens for the CarRented event emitted by the smart contract
-  contract.on("CarRented", (carId, renter, startDate, endDate, paid, event) => {
+  // Listen for CarRegistered(uint256 indexed carId, address indexed owner)
+  contract.on("CarRegistered", (carId, owner, event) => {
     callback({
-      carId: carId.toString(),
-      renter,
-      amount: ethers.formatEther(paid),
-      timestamp: new Date().toLocaleTimeString(),
+      type: "REGISTRATION",
+      title: "New Car Registered!",
+      message: `Car ID #${carId.toString()} has been added to the fleet.`,
+      time: new Date().toLocaleTimeString(),
       txHash: event.log.transactionHash
     });
   });
 
-  return () => contract.removeAllListeners("CarRented");
-}
+  // Listen for CarRented(uint256 indexed carId, address indexed renter, ...)
+  contract.on("CarRented", (carId, renter, startDate, endDate, paid, event) => {
+    callback({
+      type: "RENTAL",
+      title: "Payment Received!",
+      message: `Car #${carId.toString()} was rented by ${renter.substring(0,6)}...`,
+      amount: `Earnings: +${ethers.formatEther(paid)} ETH`,
+      time: new Date().toLocaleTimeString(),
+      txHash: event.log.transactionHash
+    });
+  });
 
-/* ---------------- HISTORY ---------------- */
-
-export async function getRenterHistory(address) {
-  const contract = getReadContract();
-  return await contract.getRenterHistory(address);
-}
-
-export async function getOwnerHistory(address) {
-  const contract = getReadContract();
-  return await contract.getOwnerHistory(address);
+  return () => {
+    contract.removeAllListeners("CarRegistered");
+    contract.removeAllListeners("CarRented");
+  };
 }
