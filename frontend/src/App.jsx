@@ -8,6 +8,9 @@ import OwnerCars from "./pages/Owner/Cars/OwnerCars";
 /* NEW IMPORT: Added for the active rentals full view */
 import OwnerActiveRentals from "./pages/Owner/Rentals/OwnerActiveRentals";
 
+/* CRITICAL IMPORT: Web3Provider for context sharing */
+import { Web3Provider } from "./context/Web3Context"; 
+
 // This component handles the shared Navigation Bar and Wallet Logic
 const Navigation = () => {
   const navigate = useNavigate();
@@ -85,50 +88,55 @@ const Navigation = () => {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      {/* The Navigation bar stays visible as you switch between dashboards */}
-      <Navigation /> 
-      
-      <Routes>
-        {/* Default route redirects immediately to login */}
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-
-        {/* Owner specific routes */}
-        <Route
-          path="/owner"
-          element={
-            <ProtectedRoute role="owner">
-              <OwnerDashboard />
-            </ProtectedRoute>
-          }
-        />
-        {/* Navigation to see all cars */}
-        <Route path="/owner/cars" element={<OwnerCars />} />
+    /* STEP 1: Wrap everything in the Web3Provider. 
+       This allows all child components (like Notifications) to access wallet data.
+    */
+    <Web3Provider>
+      <BrowserRouter>
+        {/* The Navigation bar stays visible as you switch between dashboards */}
+        <Navigation /> 
         
-        {/* NEW ROUTE: Added for seeing all active rentals */}
-        <Route 
-          path="/owner/rentals" 
-          element={
-            <ProtectedRoute role="owner">
-              <OwnerActiveRentals />
-            </ProtectedRoute>
-          } 
-        />
+        <Routes>
+          {/* Default route redirects immediately to login */}
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* Renter specific routes */}
-        <Route
-          path="/renter"
-          element={
-            <ProtectedRoute role="renter">
-              <RenterDashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* Owner specific routes */}
+          <Route
+            path="/owner"
+            element={
+              <ProtectedRoute role="owner">
+                <OwnerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          {/* Navigation to see all cars */}
+          <Route path="/owner/cars" element={<OwnerCars />} />
+          
+          {/* NEW ROUTE: Added for seeing all active rentals */}
+          <Route 
+            path="/owner/rentals" 
+            element={
+              <ProtectedRoute role="owner">
+                <OwnerActiveRentals />
+              </ProtectedRoute>
+            } 
+          />
 
-        {/* Fallback to Login for any undefined URL */}
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Renter specific routes */}
+          <Route
+            path="/renter"
+            element={
+              <ProtectedRoute role="renter">
+                <RenterDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback to Login for any undefined URL */}
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </BrowserRouter>
+    </Web3Provider>
   );
 }
