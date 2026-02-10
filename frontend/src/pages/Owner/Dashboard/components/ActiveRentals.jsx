@@ -5,14 +5,11 @@ const ActiveRentals = ({ rentals }) => {
   const navigate = useNavigate();
 
   return (
-    <div style={{ width: '100%' }}>
-      {/* HEADER: Title and View All Button */}
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center", 
-        marginBottom: "20px" 
-      }}>
+    /* Matches the outer wrapper style of My Registered Cars */
+    <div style={{ background: "rgba(255, 255, 255, 0.05)", padding: "20px", borderRadius: "15px", border: "1px solid #222", width: "100%" }}>
+      
+      {/* HEADER: Matches the layout and button style exactly */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
         <h3 style={{ margin: 0, color: "white" }}>Active Rentals</h3>
         <button 
           onClick={() => navigate("/owner/rentals")}
@@ -31,39 +28,30 @@ const ActiveRentals = ({ rentals }) => {
         </button>
       </div>
 
-      {/* GRID: Forces horizontal layout */}
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
-        gap: "20px",
-        width: "100%" 
-      }}>
+      {/* GRID: Uses flexbox instead of grid to match Registered Cars behavior */}
+      <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
         {rentals && rentals.length > 0 ? (
           rentals.slice(0, 4).map((rental, index) => (
-            <div key={index} style={{
-              background: "#1e1e24",
-              padding: "20px",
-              borderRadius: "12px",
-              border: "1px solid #333",
-              textAlign: "center"
+            /* Card Design: Exact match for My Registered Cars cards */
+            <div key={index} style={{ 
+              background: "#1e1e24", 
+              padding: "15px", 
+              borderRadius: "10px", 
+              flex: "1 1 200px", 
+              border: "1px solid #333", 
+              textAlign: "center" 
             }}>
-              <p style={{ margin: "0 0 5px 0", fontWeight: "bold", color: "white" }}>{rental.model}</p>
-              <div style={{ 
-                padding: "6px", 
-                borderRadius: "8px", 
-                background: "rgba(239, 68, 68, 0.1)", 
-                color: "#ef4444", 
-                fontSize: "0.8rem", 
-                fontWeight: "bold", 
-                marginTop: "10px",
-                border: "1px solid rgba(239, 68, 68, 0.2)"
-              }}>
-                ● Currently Rented
-              </div>
+              <p style={{ margin: "0 0 5px 0", fontWeight: "bold", color: "white" }}>
+                {rental.model}
+              </p>
+              {/* Status: Using <small> and specific color #a855f7 for Rented status */}
+              <small style={{ color: "#a855f7", fontWeight: "500" }}>
+                Status: Currently Rented
+              </small>
             </div>
           ))
         ) : (
-          <p style={{ color: "#666", gridColumn: "1 / -1" }}>No active rentals currently.</p>
+          <p style={{ color: "#666" }}>No active rentals currently.</p>
         )}
       </div>
     </div>
