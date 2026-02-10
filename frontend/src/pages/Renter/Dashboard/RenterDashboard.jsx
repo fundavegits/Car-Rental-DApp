@@ -6,15 +6,16 @@ import CurrentRental from "./components/CurrentRentals";
 import RentalHistory from "./components/RentalHistory";
 
 export default function RenterDashboard() {
-  // Enhanced filters state to track dates and location
+  // 1. Initialized state now includes 'model' to match your professional search vision
   const [filters, setFilters] = useState({
+    model: "",
     location: "",
     startDate: "",
     endDate: ""
   });
 
   const handleSearch = (searchData) => {
-    // searchData should contain { location, startDate, endDate }
+    // 2. searchData now receives { model, location, startDate, endDate } from SearchSection
     setFilters(searchData);
   };
 
@@ -23,16 +24,18 @@ export default function RenterDashboard() {
       <div className="renter-container">
         <h1 className="renter-title">Renter Dashboard</h1>
         
+        {/* TOP SECTION: Search Bar with 4 criteria */}
         <div className="renter-section">
           <SearchSection onSearch={handleSearch} />
         </div>
 
+        {/* MIDDLE SECTION: Dynamic Marketplace that filters by Model, Location, and Dates */}
         <div className="renter-section">
-          {/* We pass the global selected dates to AvailableCars */}
           <AvailableCars filters={filters} />
         </div>
 
-        <div className="renter-grid">
+        {/* BOTTOM SECTION: Your Active Keys and Transaction History */}
+        <div className="renter-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
           <CurrentRental />
           <RentalHistory />
         </div>
