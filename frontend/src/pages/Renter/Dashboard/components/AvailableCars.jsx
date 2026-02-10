@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { fetchAllCars } from "../../../../context/useCarRental";
 import CarCard from "./CarCard";
 
-export default function AvailableCars({ filters }) {
+export default function AvailableCars({ filters, onAutoFill }) {
   const [allCars, setAllCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,7 +12,6 @@ export default function AvailableCars({ filters }) {
       setLoading(true);
       try {
         const all = await fetchAllCars();
-        // Keep all available cars in state
         setAllCars(all.filter(c => Number(c.status) === 0)); 
       } catch (e) { 
         console.error(e); 
@@ -21,9 +20,8 @@ export default function AvailableCars({ filters }) {
       }
     };
     load();
-  }, []); // Only fetch once on mount
+  }, []);
 
-  // PROFESSIONAL FILTER LOGIC
   const filteredCars = allCars.filter(car => {
     const matchModel = filters?.model 
       ? car.model.toLowerCase().includes(filters.model.toLowerCase()) 
@@ -38,7 +36,7 @@ export default function AvailableCars({ filters }) {
   return (
     <div className="card" style={{ background: "rgba(255, 255, 255, 0.05)", padding: "20px", borderRadius: "15px", border: "1px solid #222" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h3 style={{ margin: 0 }}>Available Cars</h3>
+        <h3 style={{ margin: 0, color: "white" }}>Available Cars</h3>
         <button 
           onClick={() => setIsModalOpen(true)}
           style={{
@@ -54,14 +52,18 @@ export default function AvailableCars({ filters }) {
       {loading ? (
         <p style={{ color: "#666" }}>Searching blockchain...</p>
       ) : filteredCars.length > 0 ? (
-        /* Displaying the top row on the dashboard */
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
           gap: '20px' 
         }}>
           {filteredCars.slice(0, 3).map(car => (
-            <CarCard key={car.id} car={car} bookingDates={filters} />
+            <CarCard 
+              key={car.id} 
+              car={car} 
+              bookingDates={filters} 
+              onAutoFill={onAutoFill} // Pass the trigger down
+            />
           ))}
         </div>
       ) : (
@@ -70,7 +72,7 @@ export default function AvailableCars({ filters }) {
         </p>
       )}
 
-      {/* VIEW ALL MARKETPLACE MODAL */}
+      {/* VIEW ALL MODAL */}
       {isModalOpen && (
         <div style={{
           position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
@@ -83,12 +85,7 @@ export default function AvailableCars({ filters }) {
             border: "1px solid #333"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "30px" }}>
-              <div>
-                <h2 style={{ color: "white", margin: 0 }}>Car Marketplace</h2>
-                <p style={{ color: "#666", margin: "5px 0 0 0" }}>
-                  Showing {filteredCars.length} available vehicles
-                </p>
-              </div>
+              <h2 style={{ color: "white", margin: 0 }}>Car Marketplace</h2>
               <button onClick={() => setIsModalOpen(false)} style={{ background: "none", border: "none", color: "white", fontSize: "2.5rem", cursor: "pointer" }}>&times;</button>
             </div>
 
@@ -98,7 +95,15 @@ export default function AvailableCars({ filters }) {
               gap: '25px' 
             }}>
               {filteredCars.map(car => (
-                <CarCard key={car.id} car={car} bookingDates={filters} />
+                <CarCard 
+                  key={car.id} 
+                  car={car} 
+                  bookingDates={filters} 
+                  onAutoFill={(data) => {
+                    onAutoFill(data);
+                    setIsModalOpen(false); // Close modal when auto-filling
+                  }} 
+                />
               ))}
             </div>
           </div>

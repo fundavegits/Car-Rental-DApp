@@ -6,17 +6,22 @@ import CurrentRental from "./components/CurrentRentals";
 import RentalHistory from "./components/RentalHistory";
 
 export default function RenterDashboard() {
-  // 1. Initialized state now includes 'model' to match your professional search vision
-  const [filters, setFilters] = useState({
-    model: "",
-    location: "",
-    startDate: "",
-    endDate: ""
-  });
+  const initialFilters = { model: "", location: "", startDate: "", endDate: "" };
+  const [filters, setFilters] = useState(initialFilters);
 
-  const handleSearch = (searchData) => {
-    // 2. searchData now receives { model, location, startDate, endDate } from SearchSection
-    setFilters(searchData);
+  const handleSearch = (searchData) => setFilters(searchData);
+
+  const handleClear = () => setFilters(initialFilters);
+
+  // New function to receive data from a CarCard and fill the SearchSection
+  const handleAutoFill = (carDetails) => {
+    setFilters(prev => ({
+      ...prev,
+      model: carDetails.model,
+      location: carDetails.location
+    }));
+    // Scroll smoothly to top so user sees the date inputs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -24,17 +29,21 @@ export default function RenterDashboard() {
       <div className="renter-container">
         <h1 className="renter-title">Renter Dashboard</h1>
         
-        {/* TOP SECTION: Search Bar with 4 criteria */}
         <div className="renter-section">
-          <SearchSection onSearch={handleSearch} />
+          <SearchSection 
+            onSearch={handleSearch} 
+            onClear={handleClear} 
+            currentFilters={filters} 
+          />
         </div>
 
-        {/* MIDDLE SECTION: Dynamic Marketplace that filters by Model, Location, and Dates */}
         <div className="renter-section">
-          <AvailableCars filters={filters} />
+          <AvailableCars 
+            filters={filters} 
+            onAutoFill={handleAutoFill} 
+          />
         </div>
 
-        {/* BOTTOM SECTION: Your Active Keys and Transaction History */}
         <div className="renter-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
           <CurrentRental />
           <RentalHistory />
