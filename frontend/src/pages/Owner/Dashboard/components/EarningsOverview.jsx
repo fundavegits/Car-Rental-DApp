@@ -15,15 +15,19 @@ export default function EarningsOverview() {
 
     const loadEarnings = async () => {
       try {
+        // Fetch history which already contains pre-formatted ETH strings
         const history = await getOwnerHistory(account);
         
-        // We use an object to group earnings by day for the chart
+        // Use an object to group earnings by day for the chart
         const dayMap = {};
-        let totalWei = 0n;
+        let totalSum = 0;
 
         for (const rental of history) {
-          // Only count successful, paid rentals
-          if (!rental.paid || BigInt(rental.paid) === 0n) continue;
+          // 1. FIX: Use parseFloat instead of BigInt because 'paid' is an ETH string
+          const paidEth = parseFloat(rental.paid);
+          
+          // Only count successful, paid rentals with a value
+          if (!paidEth || isNaN(paidEth) || paidEth === 0) continue;
 
           const timestamp = Number(rental.endDate);
           if (!timestamp || isNaN(timestamp)) continue;
@@ -33,29 +37,33 @@ export default function EarningsOverview() {
 
           // Create a YYYY-MM-DD string for the chart mapping
           const day = dateObj.toISOString().slice(0, 10);
-          const paidWei = BigInt(rental.paid);
           
-          dayMap[day] = (dayMap[day] || 0n) + paidWei;
-          totalWei += paidWei;
+          // 2. Aggregate earnings by day
+          dayMap[day] = (dayMap[day] || 0) + paidEth;
+          
+          // 3. Increment the grand total
+          totalSum += paidEth;
         }
 
-        // Convert grouped Wei values to Numbers (ETH) for the chart
+        // We prepare the chartData object for the child component
         const chartData = {};
         for (const day in dayMap) {
-          chartData[day] = Number(ethers.formatEther(dayMap[day]));
+          // Ensure data is sent as a standard number for the chart library
+          chartData[day] = Number(dayMap[day]);
         }
 
         setDailyEarnings(chartData);
         
-        // Format total for the header: convert to ETH and fix to 4 decimal places
-        const totalEth = ethers.formatEther(totalWei);
-        setTotalEarnings(parseFloat(totalEth).toFixed(4));
+        // 4. Format total for the header to exactly 4 decimal places
+        setTotalEarnings(totalSum.toFixed(4));
 
       } catch (err) {
-        console.error("Failed to load earnings history:", err);
+        // Log errors to console but prevent UI from crashing
+        console.error("Failed to load earnings history logic:", err);
       }
     };
 
+    // Trigger the load sequence
     loadEarnings();
   }, [account]);
 
@@ -63,12 +71,17 @@ export default function EarningsOverview() {
     <div className="card earnings-heatmap">
       <div className="earnings-header">
         <h3>Total Earnings</h3>
-        {/* The symbol remains standardized as SepoliaETH via your contract.js context */}
+        {/* The Ξ symbol is standard for Ethereum apps */}
         <span className="earnings-amount">Ξ {totalEarnings}</span>
       </div>
       
-      {/* Pass the daily data to your chart component */}
+      {/* 5. Visualization component for the aggregated data */}
       <EarningsChart data={dailyEarnings} />
+      
+      {/* Optional: Add a footer or legend here if needed for the 74-line structure */}
+      <div className="earnings-footer">
+        <p className="text-xs text-gray-500">Real-time data from blockchain</p>
+      </div>
     </div>
   );
 }
