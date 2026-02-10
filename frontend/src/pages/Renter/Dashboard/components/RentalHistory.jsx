@@ -5,43 +5,19 @@ import { getRenterHistory } from "../../../../context/useCarRental";
 export default function RentalHistory() {
   const { account } = useContext(Web3Context);
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadHistory = async () => {
-      if (!account) return;
-      setLoading(true);
-      try {
-        const data = await getRenterHistory(account);
-        setHistory(data);
-      } catch (err) {
-        console.error("History Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadHistory();
+    if (account) getRenterHistory(account).then(setHistory);
   }, [account]);
 
   return (
     <div className="card">
-      <h3>Your Rental History</h3>
-      {loading ? <p>Loading history...</p> : history.length > 0 ? (
-        <div className="history-list" style={{ marginTop: "12px" }}>
-          {history.map((rental, index) => (
-            <div key={index} style={{ padding: "10px", borderBottom: "1px solid #333" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>Car ID: {rental.carId}</span>
-                {/* FIX: Just display the string. No formatting here! */}
-                <span style={{ color: "#a855f7", fontWeight: "bold" }}>Ξ {rental.paid}</span>
-              </div>
-              <p style={{ color: "#999", fontSize: "0.75rem" }}>
-                {new Date(rental.startDate * 1000).toLocaleDateString()} - {new Date(rental.endDate * 1000).toLocaleDateString()}
-              </p>
-            </div>
-          ))}
+      <h3>History</h3>
+      {history.map((h, i) => (
+        <div key={i} style={{ borderBottom: '1px solid #333', padding: '5px 0' }}>
+          <span>Car #{h.carId}</span> — <span style={{ color: '#a855f7' }}>Ξ {h.paid}</span>
         </div>
-      ) : <p className="text-gray-500 italic">No past rentals found.</p>}
+      ))}
     </div>
   );
 }
