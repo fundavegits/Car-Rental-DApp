@@ -42,58 +42,7 @@ export async function fetchAllCars() {
   }
 }
 
-export async function getActiveRental(carId) {
-  const contract = getReadContract();
-  try {
-    const rental = await contract.activeRental(carId);
-    return {
-      carId: rental.carId.toString(),
-      renter: rental.renter,
-      startDate: Number(rental.startDate),
-      endDate: Number(rental.endDate),
-      paid: ethers.formatEther(rental.paid),
-      active: rental.active
-    };
-  } catch (error) {
-    return null;
-  }
-}
-
-/* ---------------- OWNER ACTIONS ---------------- */
-
-export async function registerCar(signer, model, location, priceEth) {
-  const contract = getWriteContract(signer);
-  const tx = await contract.registerCar(
-    model,
-    location,
-    ethers.parseUnits(priceEth.toString(), "ether"),
-    { gasLimit: 500000 } 
-  );
-  return await tx.wait();
-}
-
-/* ---------------- RENTER ACTIONS ---------------- */
-
-export async function rentCar(signer, carId, startDate, endDate, totalEth) {
-  const contract = getWriteContract(signer);
-  const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
-  const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
-
-  if (endTimestamp <= startTimestamp) throw new Error("End date must be after start date.");
-
-  const tx = await contract.rentCar(
-    carId, 
-    startTimestamp, 
-    endTimestamp, 
-    {
-      value: ethers.parseUnits(totalEth.toString(), "ether"),
-      gasLimit: 1000000 
-    }
-  );
-  return await tx.wait();
-}
-
-/* ---------------- HISTORY FETCHING ---------------- */
+/* ---------------- HISTORY FETCHING (CRITICAL FOR VERCEL BUILD) ---------------- */
 
 export async function getOwnerHistory(address) {
   const contract = getReadContract();
@@ -131,13 +80,42 @@ export async function getRenterHistory(address) {
   }
 }
 
-/* ---------------- NOTIFICATIONS (EVENT LISTENERS) ---------------- */
+/* ---------------- ACTIONS ---------------- */
+
+export async function registerCar(signer, model, location, priceEth) {
+  const contract = getWriteContract(signer);
+  const tx = await contract.registerCar(
+    model,
+    location,
+    ethers.parseUnits(priceEth.toString(), "ether"),
+    { gasLimit: 500000 } 
+  );
+  return await tx.wait();
+}
+
+export async function rentCar(signer, carId, startDate, endDate, totalEth) {
+  const contract = getWriteContract(signer);
+  const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+  const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
+  const tx = await contract.rentCar(
+    carId, 
+    startTimestamp, 
+    endTimestamp, 
+    {
+      value: ethers.parseUnits(totalEth.toString(), "ether"),
+      gasLimit: 1000000 
+    }
+  );
+  return await tx.wait();
+}
+
+/* ---------------- NOTIFICATIONS WITH CAR NAMES ---------------- */
 
 export function listenToAllEvents(callback) {
   const contract = getReadContract();
 
   const handleEvent = async (carId, type, extraData = {}) => {
-    // Look up the car list to find the model name for the ID
+    // 1. We fetch all cars to find the actual Name for the notification
     const allCars = await fetchAllCars();
     const carDetails = allCars.find(c => c.id === carId.toString());
     const carName = carDetails ? carDetails.model : `Car #${carId}`;
@@ -146,14 +124,14 @@ export function listenToAllEvents(callback) {
       callback({
         type: "REGISTRATION",
         title: "New Car Registered!",
-        message: `${carName} has been added to your fleet.`,
+        message: `Your ${carName} is now live and ready for rent.`,
         time: new Date().toLocaleTimeString(),
       });
     } else if (type === "RENTAL") {
       callback({
         type: "RENTAL",
         title: "Payment Received!",
-        message: `${carName} was rented by ${extraData.renter?.substring(0, 6)}...`,
+        message: `${carName} was just rented by ${extraData.renter?.substring(0, 6)}...`,
         amount: `Earnings: +${ethers.formatEther(extraData.paid || 0)} ETH`,
         time: new Date().toLocaleTimeString(),
       });
@@ -161,13 +139,7 @@ export function listenToAllEvents(callback) {
   };
 
   contract.on("CarRegistered", (carId) => handleEvent(carId, "REGISTRATION"));
-  
-  contract.on("CarRented", (carId, renter, start, end, paid) => 
-    handleEvent(carId, "RENTAL", { renter, paid })
-  );
+  contract.on("CarRented", (carId, renter, s, e, paid) => handleEvent(carId, "RENTAL", { renter, paid }));
 
-  return () => {
-    contract.removeAllListeners("CarRegistered");
-    contract.removeAllListeners("CarRented");
-  };
+  return () => contract.removeAllListeners();
 }
