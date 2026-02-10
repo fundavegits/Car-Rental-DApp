@@ -93,7 +93,7 @@ export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   return await tx.wait();
 }
 
-/* ---------------- HISTORY FETCHING (NEWLY ADDED) ---------------- */
+/* ---------------- HISTORY FETCHING ---------------- */
 
 export async function getOwnerHistory(address) {
   const contract = getReadContract();
@@ -135,27 +135,36 @@ export async function getRenterHistory(address) {
 
 export function listenToAllEvents(callback) {
   const contract = getReadContract();
-  
-  contract.on("CarRegistered", (carId, owner, event) => {
-    callback({
-      type: "REGISTRATION",
-      title: "New Car Registered!",
-      message: `Car ID #${carId.toString()} has been added to the fleet.`,
-      time: new Date().toLocaleTimeString(),
-      txHash: event.log.transactionHash
-    });
-  });
 
-  contract.on("CarRented", (carId, renter, startDate, endDate, paid, event) => {
-    callback({
-      type: "RENTAL",
-      title: "Payment Received!",
-      message: `Car #${carId.toString()} was rented by ${renter.substring(0,6)}...`,
-      amount: `Earnings: +${ethers.formatEther(paid)} ETH`,
-      time: new Date().toLocaleTimeString(),
-      txHash: event.log.transactionHash
-    });
-  });
+  const handleEvent = async (carId, type, extraData = {}) => {
+    // Look up the car list to find the model name for the ID
+    const allCars = await fetchAllCars();
+    const carDetails = allCars.find(c => c.id === carId.toString());
+    const carName = carDetails ? carDetails.model : `Car #${carId}`;
+
+    if (type === "REGISTRATION") {
+      callback({
+        type: "REGISTRATION",
+        title: "New Car Registered!",
+        message: `${carName} has been added to your fleet.`,
+        time: new Date().toLocaleTimeString(),
+      });
+    } else if (type === "RENTAL") {
+      callback({
+        type: "RENTAL",
+        title: "Payment Received!",
+        message: `${carName} was rented by ${extraData.renter?.substring(0, 6)}...`,
+        amount: `Earnings: +${ethers.formatEther(extraData.paid || 0)} ETH`,
+        time: new Date().toLocaleTimeString(),
+      });
+    }
+  };
+
+  contract.on("CarRegistered", (carId) => handleEvent(carId, "REGISTRATION"));
+  
+  contract.on("CarRented", (carId, renter, start, end, paid) => 
+    handleEvent(carId, "RENTAL", { renter, paid })
+  );
 
   return () => {
     contract.removeAllListeners("CarRegistered");
