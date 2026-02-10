@@ -8,30 +8,47 @@ export default function CurrentRental() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true; // Prevents updating state if user leaves page
+
     const findMyActiveRental = async () => {
-      if (!account) return;
+      // Safety check: if no account, we can't look for rentals
+      if (!account) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
         const allCars = await fetchAllCars();
-        // Look for a car where the status is 1 (Rented) 
-        // and check if the current user is the renter
+        let found = null;
+
         for (const car of allCars) {
+          // Status 1 means the car is currently Rented
           if (Number(car.status) === 1) {
             const rental = await getActiveRental(car.id);
-            if (rental && rental.renter.toLowerCase() === account.toLowerCase() && rental.active) {
-              setActiveCar({ ...car, rentalDetails: rental });
+            
+            // SAFE CHECK: Ensure rental exists and account is valid before toLowerCase()
+            if (
+              rental && 
+              rental.active && 
+              rental.renter?.toLowerCase() === account?.toLowerCase()
+            ) {
+              found = { ...car, rentalDetails: rental };
               break;
             }
           }
         }
+
+        if (isMounted) setActiveCar(found);
       } catch (err) {
         console.error("Error fetching current rental:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     findMyActiveRental();
+    return () => { isMounted = false; }; // Cleanup
   }, [account]);
 
   return (
@@ -41,13 +58,22 @@ export default function CurrentRental() {
         <p>Checking active rentals...</p>
       ) : activeCar ? (
         <div style={{ marginTop: "12px", padding: "12px", border: "1px solid #444", borderRadius: "8px" }}>
-          <h4>{activeCar.model}</h4>
-          <p>📍 {activeCar.location}</p>
-          <p>📅 Ends: {new Date(activeCar.rentalDetails.endDate * 1000).toLocaleDateString()}</p>
-          <span className="status rented">Active Now</span>
+          <h4 style={{ color: "#a855f7" }}>{activeCar.model}</h4>
+          <p style={{ fontSize: "0.9rem" }}>📍 {activeCar.location}</p>
+          {/* Safety check for the date conversion */}
+          <p style={{ fontSize: "0.85rem", marginTop: "8px" }}>
+            📅 <strong>Ends:</strong> {activeCar.rentalDetails?.endDate 
+              ? new Date(activeCar.rentalDetails.endDate * 1000).toLocaleDateString() 
+              : "N/A"}
+          </p>
+          <div style={{ marginTop: "10px" }}>
+             <span className="status-badge" style={{ background: "#22c55e", color: "white", padding: "2px 8px", borderRadius: "4px", fontSize: "0.7rem" }}>
+               Active Now
+             </span>
+          </div>
         </div>
       ) : (
-        <p>No active rental found.</p>
+        <p style={{ color: "#666", fontSize: "0.9rem", fontStyle: "italic" }}>No active rental found.</p>
       )}
     </div>
   );
