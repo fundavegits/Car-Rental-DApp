@@ -42,7 +42,25 @@ export async function fetchAllCars() {
   }
 }
 
-/* ---------------- HISTORY FETCHING (CRITICAL FOR VERCEL BUILD) ---------------- */
+// RESTORED: Needed by CurrentRentals.jsx
+export async function getActiveRental(carId) {
+  const contract = getReadContract();
+  try {
+    const rental = await contract.activeRental(carId);
+    return {
+      carId: rental.carId.toString(),
+      renter: rental.renter,
+      startDate: Number(rental.startDate),
+      endDate: Number(rental.endDate),
+      paid: ethers.formatEther(rental.paid),
+      active: rental.active
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+/* ---------------- HISTORY FETCHING ---------------- */
 
 export async function getOwnerHistory(address) {
   const contract = getReadContract();
@@ -109,13 +127,12 @@ export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   return await tx.wait();
 }
 
-/* ---------------- NOTIFICATIONS WITH CAR NAMES ---------------- */
+/* ---------------- NOTIFICATIONS ---------------- */
 
 export function listenToAllEvents(callback) {
   const contract = getReadContract();
 
   const handleEvent = async (carId, type, extraData = {}) => {
-    // 1. We fetch all cars to find the actual Name for the notification
     const allCars = await fetchAllCars();
     const carDetails = allCars.find(c => c.id === carId.toString());
     const carName = carDetails ? carDetails.model : `Car #${carId}`;
@@ -124,14 +141,14 @@ export function listenToAllEvents(callback) {
       callback({
         type: "REGISTRATION",
         title: "New Car Registered!",
-        message: `Your ${carName} is now live and ready for rent.`,
+        message: `${carName} has been added to the fleet.`,
         time: new Date().toLocaleTimeString(),
       });
     } else if (type === "RENTAL") {
       callback({
         type: "RENTAL",
         title: "Payment Received!",
-        message: `${carName} was just rented by ${extraData.renter?.substring(0, 6)}...`,
+        message: `${carName} was rented by ${extraData.renter?.substring(0, 6)}...`,
         amount: `Earnings: +${ethers.formatEther(extraData.paid || 0)} ETH`,
         time: new Date().toLocaleTimeString(),
       });
