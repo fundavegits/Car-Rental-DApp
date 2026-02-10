@@ -15,37 +15,33 @@ export default function RentalHistory() {
         const data = await getRenterHistory(account);
         setHistory(data);
       } catch (err) {
-        console.error("Error loading rental history:", err);
+        console.error("History Error:", err);
       } finally {
         setLoading(false);
       }
     };
-
     loadHistory();
   }, [account]);
 
   return (
     <div className="card">
       <h3>Your Rental History</h3>
-      {loading ? (
-        <p>Loading history...</p>
-      ) : history.length > 0 ? (
+      {loading ? <p>Loading history...</p> : history.length > 0 ? (
         <div className="history-list" style={{ marginTop: "12px" }}>
           {history.map((rental, index) => (
-            <div key={index} style={{ padding: "10px", borderBottom: "1px solid #333", fontSize: "0.85rem" }}>
+            <div key={index} style={{ padding: "10px", borderBottom: "1px solid #333" }}>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span>Car ID: {rental.carId}</span>
+                {/* FIX: Just display the string. No formatting here! */}
                 <span style={{ color: "#a855f7", fontWeight: "bold" }}>Ξ {rental.paid}</span>
               </div>
-              <p style={{ color: "#999", fontSize: "0.75rem", margin: "4px 0" }}>
+              <p style={{ color: "#999", fontSize: "0.75rem" }}>
                 {new Date(rental.startDate * 1000).toLocaleDateString()} - {new Date(rental.endDate * 1000).toLocaleDateString()}
               </p>
             </div>
           ))}
         </div>
-      ) : (
-        <p style={{ color: "#666", fontStyle: "italic" }}>No past rentals found.</p>
-      )}
+      ) : <p className="text-gray-500 italic">No past rentals found.</p>}
     </div>
   );
 }
