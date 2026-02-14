@@ -1,7 +1,6 @@
 import CarCard from "./CarCard";
 
 export default function AvailableCars({ expanded, data, filters, onAutoFill, open, close }) {
-  // Use data from props instead of fetching
   const filteredCars = data.filter(car => {
     const matchModel = filters?.model ? car.model.toLowerCase().includes(filters.model.toLowerCase()) : true;
     const matchLocation = filters?.location ? car.location.toLowerCase().includes(filters.location.toLowerCase()) : true;
@@ -10,17 +9,13 @@ export default function AvailableCars({ expanded, data, filters, onAutoFill, ope
 
   if (expanded) {
     return (
-      <div className="focus-section">
+      <div style={{ animation: "fadeIn 0.4s ease" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
           <h2 style={{ margin: 0 }}>Car Marketplace</h2>
-          <button onClick={close} style={{ background: "#222", color: "white", border: "1px solid #444", padding: "10px 20px", borderRadius: "10px", cursor: "pointer" }}>
-            Back to Dashboard
-          </button>
+          <button onClick={close} style={{ background: "#222", color: "white", border: "1px solid #444", padding: "10px 20px", borderRadius: "10px", cursor: "pointer" }}>Back to Dashboard</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '25px' }}>
-          {filteredCars.map(car => (
-            <CarCard key={car.id} car={car} bookingDates={filters} onAutoFill={onAutoFill} />
-          ))}
+          {filteredCars.map(car => <CarCard key={car.id} car={car} bookingDates={filters} onAutoFill={onAutoFill} />)}
         </div>
       </div>
     );
@@ -35,9 +30,7 @@ export default function AvailableCars({ expanded, data, filters, onAutoFill, ope
         </button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
-        {filteredCars.slice(0, 3).map(car => (
-          <CarCard key={car.id} car={car} bookingDates={filters} onAutoFill={onAutoFill} />
-        ))}
+        {filteredCars.slice(0, 3).map(car => <CarCard key={car.id} car={car} bookingDates={filters} onAutoFill={onAutoFill} />)}
       </div>
     </div>
   );
