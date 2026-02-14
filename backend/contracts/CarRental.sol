@@ -89,14 +89,30 @@ contract CarRental {
         emit CarUpdated(_carId);
     }
 
+    /**
+     * @dev Hides a car from the marketplace. Sets status to Unavailable (2).
+     */
     function setCarUnavailable(uint256 _carId) external {
         Car storage car = cars[_carId];
         require(car.owner == msg.sender, "Only owner");
-        require(car.status == CarStatus.Available, "Car cannot be disabled");
+        require(car.status == CarStatus.Available, "Car must be Available to hide");
 
         car.status = CarStatus.Unavailable;
 
         emit CarUnavailable(_carId);
+    }
+
+    /**
+     * @dev Brings a hidden car back to the marketplace. Sets status to Available (0).
+     */
+    function setCarAvailable(uint256 _carId) external {
+        Car storage car = cars[_carId];
+        require(car.owner == msg.sender, "Only owner");
+        require(car.status == CarStatus.Unavailable, "Car is not currently hidden");
+
+        car.status = CarStatus.Available;
+
+        emit CarUpdated(_carId);
     }
 
     function cancelRental(uint256 _carId) external {
@@ -147,7 +163,6 @@ contract CarRental {
 
         uint256 totalCost = daysRented * car.pricePerDay;
         
-        // Ensure user sent enough ETH
         require(msg.value >= totalCost, "Not enough ETH sent");
 
         car.status = CarStatus.Rented;
@@ -166,11 +181,9 @@ contract CarRental {
         renterHistory[msg.sender].push(rental);
         ownerHistory[car.owner].push(rental);
 
-        // Send exactly the cost to the owner
         (bool ownerPaid, ) = payable(car.owner).call{value: totalCost}("");
         require(ownerPaid, "Owner payment failed");
 
-        // If user sent too much, refund the excess balance
         if (msg.value > totalCost) {
             uint256 refundAmount = msg.value - totalCost;
             (bool refundSuccess, ) = payable(msg.sender).call{value: refundAmount}("");

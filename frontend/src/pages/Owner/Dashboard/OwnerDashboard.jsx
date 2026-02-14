@@ -4,6 +4,7 @@ import { Web3Context } from "../../../context/Web3Context";
 import {
   fetchAllCars,
   registerCar as registerCarOnChain,
+  toggleCarAvailability // Newly imported logic
 } from "../../../context/useCarRental";
 
 import "./OwnerDashboard.css";
@@ -45,6 +46,25 @@ export default function OwnerDashboard() {
   useEffect(() => {
     if (account) loadOwnerCars();
   }, [account]);
+
+  // Handle the Hide/Show toggle transaction
+  const handleToggleAvailability = async (carId, currentStatus) => {
+    if (!signer) return alert("Wallet not connected");
+    try {
+      setLoading(true);
+      // Status 0 is Available, Status 2 is Unavailable
+      const isAvailable = Number(currentStatus) === 0; 
+      await toggleCarAvailability(signer, carId, isAvailable);
+      
+      alert(isAvailable ? "Car hidden from marketplace" : "Car is now public!");
+      await loadOwnerCars(); // Instant refresh of the dashboard data
+    } catch (err) {
+      console.error("Toggle failed:", err);
+      alert("Transaction failed. Make sure you are the owner of this car.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle the registration of a new vehicle on the blockchain
   const handleRegisterCar = async () => {
@@ -88,7 +108,7 @@ export default function OwnerDashboard() {
           <input type="text" placeholder="Pickup location" value={location} onChange={(e) => setLocation(e.target.value)} />
           <input type="text" placeholder="Price per day (ETH)" value={pricePerDay} onChange={(e) => setPricePerDay(e.target.value)} />
           <button className="primary-btn" onClick={handleRegisterCar} disabled={loading}>
-            {loading ? "Registering..." : "Add Car"}
+            {loading ? "Processing..." : "Add Car"}
           </button>
         </div>
       </div>
@@ -114,9 +134,37 @@ export default function OwnerDashboard() {
             cars.slice(0, 4).map((car, index) => (
               <div key={index} style={{ background: "#1e1e24", padding: "15px", borderRadius: "10px", flex: "1 1 200px", border: "1px solid #333", textAlign: "center" }}>
                 <p style={{ margin: "0 0 5px 0", fontWeight: "bold" }}>{car.model}</p>
-                <small style={{ color: car.status === 0 ? "#10b981" : "#a855f7" }}>
-                  Status: {car.status === 0 ? "Available" : "Rented"}
-                </small>
+                
+                {/* Visual Status Indicator */}
+                <div style={{ marginBottom: "12px" }}>
+                  <small style={{ 
+                    color: car.status === 0 ? "#10b981" : car.status === 2 ? "#ef4444" : "#a855f7",
+                    fontWeight: "bold" 
+                  }}>
+                    {car.status === 0 ? "● Available" : car.status === 2 ? "● Hidden" : "● Rented"}
+                  </small>
+                </div>
+
+                {/* Toggle Button: Only show if car isn't rented (status 1) */}
+                {car.status !== 1 && (
+                  <button 
+                    onClick={() => handleToggleAvailability(car.id, car.status)}
+                    disabled={loading}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      fontSize: "0.75rem",
+                      borderRadius: "8px",
+                      cursor: loading ? "not-allowed" : "pointer",
+                      background: car.status === 0 ? "rgba(239, 68, 68, 0.1)" : "rgba(16, 185, 129, 0.1)",
+                      color: car.status === 0 ? "#ef4444" : "#10b981",
+                      border: `1px solid ${car.status === 0 ? "#ef4444" : "#10b981"}`,
+                      transition: "0.2s"
+                    }}
+                  >
+                    {car.status === 0 ? "Hide from Market" : "Make Available"}
+                  </button>
+                )}
               </div>
             ))
           ) : (

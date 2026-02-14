@@ -5,7 +5,7 @@ import { CONTRACT_ADDRESS, SEPOLIA_RPC } from "../abi/contract";
 const ABI = artifact.abi;
 
 /* -------------------------------------------------------------------------- */
-/* CONTRACT INSTANCES                           */
+/* CONTRACT INSTANCES                                                         */
 /* -------------------------------------------------------------------------- */
 
 export function getReadContract() {
@@ -19,7 +19,7 @@ export function getWriteContract(signer) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* READ HELPERS                                */
+/* READ HELPERS                                                               */
 /* -------------------------------------------------------------------------- */
 
 export async function fetchAllCars() {
@@ -65,7 +65,7 @@ export async function getActiveRental(carId) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* HISTORY FETCHING                             */
+/* HISTORY FETCHING                                                           */
 /* -------------------------------------------------------------------------- */
 
 export async function getOwnerHistory(address) {
@@ -77,7 +77,7 @@ export async function getOwnerHistory(address) {
       renter: rental.renter,
       startDate: Number(rental.startDate),
       endDate: Number(rental.endDate),
-      paid: ethers.formatEther(rental.paid), // Keep as string ETH for UI math
+      paid: ethers.formatEther(rental.paid),
       active: rental.active,
     }));
   } catch (error) {
@@ -105,7 +105,7 @@ export async function getRenterHistory(address) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* OWNER ACTIONS                                */
+/* OWNER ACTIONS                                                              */
 /* -------------------------------------------------------------------------- */
 
 export async function registerCar(signer, model, location, priceEth) {
@@ -119,14 +119,29 @@ export async function registerCar(signer, model, location, priceEth) {
   return await tx.wait();
 }
 
+/**
+ * Toggles car visibility based on current status
+ */
+export async function toggleCarAvailability(signer, carId, isCurrentlyAvailable) {
+  try {
+    const contract = getWriteContract(signer);
+    // Call setCarUnavailable if currently 0, otherwise call setCarAvailable
+    const tx = isCurrentlyAvailable 
+      ? await contract.setCarUnavailable(carId) 
+      : await contract.setCarAvailable(carId);
+    return await tx.wait();
+  } catch (error) {
+    console.error("Error toggling car availability:", error);
+    throw error;
+  }
+}
+
 /* -------------------------------------------------------------------------- */
-/* RENTER ACTIONS                               */
+/* RENTER ACTIONS                                                             */
 /* -------------------------------------------------------------------------- */
 
 export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   const contract = getWriteContract(signer);
-  
-  // Convert JS Dates to Unix timestamps (seconds) for Solidity
   const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
   const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
 
@@ -146,15 +161,28 @@ export async function rentCar(signer, carId, startDate, endDate, totalEth) {
   return await tx.wait();
 }
 
+/**
+ * Calls the smart contract to cancel a rental
+ */
+export async function cancelRental(signer, carId) {
+  try {
+    const contract = getWriteContract(signer);
+    const tx = await contract.cancelRental(carId, { gasLimit: 500000 });
+    return await tx.wait();
+  } catch (error) {
+    console.error("Error cancelling rental:", error);
+    throw error;
+  }
+}
+
 /* -------------------------------------------------------------------------- */
-/* NOTIFICATIONS                                */
+/* NOTIFICATIONS / EVENTS                                                     */
 /* -------------------------------------------------------------------------- */
 
 export function listenToAllEvents(callback) {
   const contract = getReadContract();
 
   const handleEvent = async (carId, type, extraData = {}) => {
-    // Look up the car list to find the model name for the ID
     const allCars = await fetchAllCars();
     const carDetails = allCars.find(c => c.id === carId.toString());
     const carName = carDetails ? carDetails.model : `Car #${carId}`;
@@ -177,14 +205,11 @@ export function listenToAllEvents(callback) {
     }
   };
 
-  // Event listeners
   contract.on("CarRegistered", (carId) => handleEvent(carId, "REGISTRATION"));
-  
   contract.on("CarRented", (carId, renter, start, end, paid) => 
     handleEvent(carId, "RENTAL", { renter, paid })
   );
 
-  // Return unsubscribe function
   return () => {
     contract.removeAllListeners("CarRegistered");
     contract.removeAllListeners("CarRented");
