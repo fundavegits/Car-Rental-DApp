@@ -8,23 +8,21 @@ import RentalHistory from "./components/RentalHistory";
 export default function RenterDashboard() {
   const initialFilters = { model: "", location: "", startDate: "", endDate: "" };
   const [filters, setFilters] = useState(initialFilters);
-  
-  // Master state: 'market', 'current', 'history', or null
-  const [activeModal, setActiveModal] = useState(null);
+  const [activeModal, setActiveModal] = useState(null); // 'market', 'current', 'history', or null
 
   const handleSearch = (searchData) => setFilters(searchData);
   const handleClear = () => setFilters(initialFilters);
 
   const handleAutoFill = (carDetails) => {
     setFilters(prev => ({ ...prev, model: carDetails.model, location: carDetails.location }));
-    setActiveModal(null); // Close modal when selection is made
+    setActiveModal(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="renter-page" style={{ overflowX: "hidden", minHeight: "100vh" }}>
+    <div className="renter-page" style={{ position: "relative", minHeight: "100vh" }}>
       <div className="renter-container">
-        <h1 className="renter-title" style={{ color: "white", marginBottom: "30px" }}>Renter Dashboard</h1>
+        <h1 className="renter-title">Renter Dashboard</h1>
         
         <div className="renter-section">
           <SearchSection onSearch={handleSearch} onClear={handleClear} currentFilters={filters} />
@@ -40,7 +38,7 @@ export default function RenterDashboard() {
           />
         </div>
 
-        <div className="renter-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "20px", marginTop: "20px" }}>
+        <div className="renter-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
           <CurrentRental 
             isModalOpen={activeModal === 'current'}
             openModal={() => setActiveModal('current')}
