@@ -2,9 +2,9 @@ import CarCard from "./CarCard";
 
 export default function AvailableCars({ expanded, data, filters, onAutoFill, open, close }) {
   const filteredCars = data.filter(car => {
-    const matchModel = filters?.model ? car.model.toLowerCase().includes(filters.model.toLowerCase()) : true;
-    const matchLocation = filters?.location ? car.location.toLowerCase().includes(filters.location.toLowerCase()) : true;
-    return matchModel && matchLocation;
+    const m = filters?.model ? car.model.toLowerCase().includes(filters.model.toLowerCase()) : true;
+    const l = filters?.location ? car.location.toLowerCase().includes(filters.location.toLowerCase()) : true;
+    return m && l;
   });
 
   if (expanded) {

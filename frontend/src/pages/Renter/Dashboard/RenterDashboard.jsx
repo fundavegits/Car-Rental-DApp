@@ -53,7 +53,6 @@ export default function RenterDashboard() {
     setFilters(prev => ({ ...prev, model: carDetails.model, location: carDetails.location }));
     setActiveView(null);
     
-    // Smooth scroll and auto-focus date picker
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => {
       searchSectionRef.current?.focusStartDate();
