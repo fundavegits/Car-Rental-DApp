@@ -1,60 +1,41 @@
-import { useState, useEffect } from "react";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 
-export default function SearchSection({ onSearch, onClear, currentFilters }) {
-  const [model, setModel] = useState(currentFilters.model);
-  const [location, setLocation] = useState(currentFilters.location);
-  const [startDate, setStartDate] = useState(currentFilters.startDate);
-  const [endDate, setEndDate] = useState(currentFilters.endDate);
+const SearchSection = forwardRef(({ onSearch, onClear, currentFilters }, ref) => {
+  const startDateRef = useRef(null);
 
-  // Sync internal state if the dashboard triggers an auto-fill
-  useEffect(() => {
-    setModel(currentFilters.model);
-    setLocation(currentFilters.location);
-    setStartDate(currentFilters.startDate);
-    setEndDate(currentFilters.endDate);
-  }, [currentFilters]);
-
-  const isFiltered = model || location || startDate || endDate;
+  useImperativeHandle(ref, () => ({
+    focusStartDate: () => {
+      if (startDateRef.current) {
+        startDateRef.current.focus();
+        if (startDateRef.current.showPicker) startDateRef.current.showPicker();
+      }
+    }
+  }));
 
   return (
-    <div className="card" style={{ padding: "24px", position: "relative" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-        <h3 style={{ margin: 0 }}>Find Your Next Ride</h3>
-        {isFiltered && (
-          <button 
-            onClick={onClear} 
-            style={{ background: "none", border: "none", color: "#ff4d4d", cursor: "pointer", fontSize: "0.85rem", fontWeight: "bold" }}
-          >
-            ✕ Clear Search
-          </button>
-        )}
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "15px", alignItems: "flex-end" }}>
+    <div className="card" style={{ background: "rgba(255, 255, 255, 0.03)", padding: "25px", borderRadius: "20px", border: "1px solid #222" }}>
+      <h3 style={{ marginTop: 0 }}>Find Your Next Ride</h3>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: "15px", alignItems: "end" }}>
         <div>
-          <label style={{ display: "block", fontSize: "0.75rem", color: "#666", marginBottom: "5px" }}>Car Model</label>
-          <input type="text" value={model} onChange={(e) => setModel(e.target.value)} placeholder="Model..." style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#111", border: "1px solid #333", color: "white" }} />
+          <label style={{ fontSize: "0.8rem", color: "#888" }}>Car Model</label>
+          <input type="text" value={currentFilters.model} onChange={(e) => onSearch({...currentFilters, model: e.target.value})} style={{ width: "100%", background: "#111", border: "1px solid #333", color: "white", padding: "10px", borderRadius: "8px" }} />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: "0.75rem", color: "#666", marginBottom: "5px" }}>Location</label>
-          <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Location..." style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#111", border: "1px solid #333", color: "white" }} />
+          <label style={{ fontSize: "0.8rem", color: "#888" }}>Location</label>
+          <input type="text" value={currentFilters.location} onChange={(e) => onSearch({...currentFilters, location: e.target.value})} style={{ width: "100%", background: "#111", border: "1px solid #333", color: "white", padding: "10px", borderRadius: "8px" }} />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: "0.75rem", color: "#666", marginBottom: "5px" }}>Start</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#111", border: "1px solid #333", color: "white" }} />
+          <label style={{ fontSize: "0.8rem", color: "#888" }}>Start Date</label>
+          <input ref={startDateRef} type="date" value={currentFilters.startDate} onChange={(e) => onSearch({...currentFilters, startDate: e.target.value})} style={{ width: "100%", background: "#111", border: "1px solid #333", color: "white", padding: "10px", borderRadius: "8px" }} />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: "0.75rem", color: "#666", marginBottom: "5px" }}>End</label>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#111", border: "1px solid #333", color: "white" }} />
+          <label style={{ fontSize: "0.8rem", color: "#888" }}>End Date</label>
+          <input type="date" value={currentFilters.endDate} onChange={(e) => onSearch({...currentFilters, endDate: e.target.value})} style={{ width: "100%", background: "#111", border: "1px solid #333", color: "white", padding: "10px", borderRadius: "8px" }} />
         </div>
-        <button 
-          onClick={() => onSearch({ model, location, startDate, endDate })}
-          className="primary-btn" 
-          style={{ height: "42px", borderRadius: "8px", fontWeight: "bold" }}
-        >
-          Search & Book
-        </button>
+        <button onClick={onClear} style={{ padding: "10px 20px", background: "#333", color: "white", border: "none", borderRadius: "8px", cursor: "pointer" }}>Clear</button>
       </div>
     </div>
   );
-}
+});
+
+export default SearchSection;

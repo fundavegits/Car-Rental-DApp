@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import "./RenterDashboard.css";
 import { Web3Context } from "../../../context/Web3Context";
 import { fetchAllCars, getRenterHistory, getActiveRental } from "../../../context/useCarRental";
@@ -14,39 +14,22 @@ export default function RenterDashboard() {
   const [filters, setFilters] = useState(initialFilters);
   const [activeView, setActiveView] = useState(null); 
   const [loading, setLoading] = useState(true);
-  const [blockchainData, setBlockchainData] = useState({
-    available: [],
-    current: [],
-    history: []
-  });
+  const [blockchainData, setBlockchainData] = useState({ available: [], current: [], history: [] });
+  
+  const searchSectionRef = useRef(null);
 
   const loadDashboardData = async () => {
     if (!account) return;
     setLoading(true);
     try {
-      // 1. Parallel fetch of core lists
-      const [allCars, rawHistory] = await Promise.all([
-        fetchAllCars(),
-        getRenterHistory(account)
-      ]);
-
-      // 2. Optimized Parallel Rental Check
+      const [allCars, rawHistory] = await Promise.all([fetchAllCars(), getRenterHistory(account)]);
       const rentedCars = allCars.filter(c => Number(c.status) === 1);
-      const rentalDetailsArray = await Promise.all(
-        rentedCars.map(car => getActiveRental(car.id))
-      );
+      const rentalDetailsArray = await Promise.all(rentedCars.map(car => getActiveRental(car.id)));
 
       const activeRentals = rentedCars
-        .map((car, index) => ({ 
-          ...car, 
-          rentalDetails: rentalDetailsArray[index] 
-        }))
-        .filter(item => 
-          item.rentalDetails?.active && 
-          item.rentalDetails.renter?.toLowerCase() === account.toLowerCase()
-        );
+        .map((car, index) => ({ ...car, rentalDetails: rentalDetailsArray[index] }))
+        .filter(item => item.rentalDetails?.active && item.rentalDetails.renter?.toLowerCase() === account.toLowerCase());
 
-      // 3. Map History
       const detailedHistory = rawHistory.map(item => ({
         ...item,
         model: allCars.find(c => c.id === item.carId)?.model || `Car #${item.carId}`
@@ -64,14 +47,17 @@ export default function RenterDashboard() {
     }
   };
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [account]);
+  useEffect(() => { loadDashboardData(); }, [account]);
 
   const handleAutoFill = (carDetails) => {
     setFilters(prev => ({ ...prev, model: carDetails.model, location: carDetails.location }));
     setActiveView(null);
+    
+    // Smooth scroll and auto-focus date picker
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+      searchSectionRef.current?.focusStartDate();
+    }, 400); 
   };
 
   return (
@@ -79,8 +65,8 @@ export default function RenterDashboard() {
       <div className="renter-container" style={{ maxWidth: "1250px", margin: "0 auto", padding: "40px 20px" }}>
         
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
-          <h1 className="renter-title" style={{ fontSize: "2.5rem", fontWeight: "800", margin: 0 }}>Renter Dashboard</h1>
-          {loading && <span style={{ color: "#a855f7", fontSize: "0.9rem" }}>Syncing Blockchain...</span>}
+          <h1 className="renter-title">Renter Dashboard</h1>
+          {loading && <span style={{ color: "#a855f7" }}>Syncing Blockchain...</span>}
         </div>
 
         {activeView === 'market' && (
@@ -88,7 +74,7 @@ export default function RenterDashboard() {
         )}
         
         {activeView === 'current' && (
-          <CurrentRental expanded={true} data={blockchainData.current} close={() => setActiveView(null)} refresh={loadDashboardData} />
+          <CurrentRental expanded={true} data={blockchainData.current} close={() => setActiveView(null)} />
         )}
 
         {activeView === 'history' && (
@@ -97,7 +83,12 @@ export default function RenterDashboard() {
 
         {!activeView && (
           <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
-            <SearchSection onSearch={setFilters} onClear={() => setFilters(initialFilters)} currentFilters={filters} />
+            <SearchSection 
+              ref={searchSectionRef} 
+              onSearch={setFilters} 
+              onClear={() => setFilters(initialFilters)} 
+              currentFilters={filters} 
+            />
             <AvailableCars expanded={false} data={blockchainData.available} filters={filters} onAutoFill={handleAutoFill} open={() => setActiveView('market')} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: "30px" }}>
               <CurrentRental expanded={false} data={blockchainData.current} open={() => setActiveView('current')} />
