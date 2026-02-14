@@ -8,11 +8,13 @@ export default function RentalHistory() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // 1. DATA LOADING LOGIC (Preserved exactly from your original)
   useEffect(() => {
     const loadHistoryData = async () => {
       if (!account) return;
       setLoading(true);
       try {
+        // Fetch both history and all cars to match IDs to names
         const [historyData, allCars] = await Promise.all([
           getRenterHistory(account),
           fetchAllCars()
@@ -27,7 +29,7 @@ export default function RentalHistory() {
           };
         });
 
-        setHistory(detailedHistory.reverse());
+        setHistory(detailedHistory.reverse()); // Show most recent first
       } catch (err) {
         console.error("Error loading history:", err);
       } finally {
@@ -37,9 +39,13 @@ export default function RentalHistory() {
     loadHistoryData();
   }, [account]);
 
-  // SCROLL LOCK
+  // 2. SCROLL LOCK LOGIC: Stops the "messy" background from moving
   useEffect(() => {
-    document.body.style.overflow = isModalOpen ? "hidden" : "auto";
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
     return () => { document.body.style.overflow = "auto"; };
   }, [isModalOpen]);
 
@@ -65,6 +71,7 @@ export default function RentalHistory() {
         <p style={{ color: "#666" }}>Loading history...</p>
       ) : history.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {/* Preview: Last 5 items */}
           {history.slice(0, 5).map((item, index) => (
             <div key={index} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #333" }}>
               <div>
@@ -79,21 +86,43 @@ export default function RentalHistory() {
         <p style={{ color: "#666", fontStyle: "italic" }}>No history found.</p>
       )}
 
-      {/* FULL SCREEN MODAL */}
+      {/* 3. MODAL: UPDATED WITH BULLTEPROOF VIEWPORT CSS */}
       {isModalOpen && (
         <div style={{
-          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-          backgroundColor: "rgba(0,0,0,0.92)", display: "flex", justifyContent: "center",
-          alignItems: "center", zIndex: 99997, backdropFilter: "blur(10px)"
+          position: "fixed", 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0,
+          width: "100vw", // Viewport Width
+          height: "100vh", // Viewport Height
+          backgroundColor: "rgba(0,0,0,0.92)", 
+          display: "flex", 
+          justifyContent: "center",
+          alignItems: "center", 
+          zIndex: 99999, // Force to the top layer
+          backdropFilter: "blur(12px)",
+          padding: "20px"
         }}>
           <div style={{
-            background: "#0d0d0d", padding: "30px", borderRadius: "20px",
-            width: "95%", maxWidth: "800px", maxHeight: "80vh", overflowY: "auto",
-            border: "1px solid #333", boxShadow: "0 20px 60px rgba(0,0,0,1)"
+            background: "#0d0d0d", 
+            padding: "30px", 
+            borderRadius: "20px",
+            width: "100%", 
+            maxWidth: "800px", 
+            maxHeight: "85vh", 
+            overflowY: "auto",
+            border: "1px solid #333", 
+            boxShadow: "0 20px 60px rgba(0,0,0,1)"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "25px", alignItems: "center" }}>
               <h2 style={{ color: "white", margin: 0 }}>All Transactions</h2>
-              <button onClick={() => setIsModalOpen(false)} style={{ background: "none", border: "none", color: "white", fontSize: "2rem", cursor: "pointer" }}>&times;</button>
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                style={{ background: "none", border: "none", color: "white", fontSize: "2.5rem", cursor: "pointer" }}
+              >
+                &times;
+              </button>
             </div>
 
             <table style={{ width: "100%", color: "#ccc", borderCollapse: "collapse" }}>
