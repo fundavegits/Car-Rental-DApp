@@ -36,13 +36,19 @@ export default function CurrentRentals() {
     return () => { isMounted = false; };
   }, [account]);
 
+  // SCROLL LOCK
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? "hidden" : "auto";
+    return () => { document.body.style.overflow = "auto"; };
+  }, [isModalOpen]);
+
   return (
     <div className="card" style={{ 
       background: "rgba(255, 255, 255, 0.05)", 
       padding: "20px", 
       borderRadius: "15px", 
       border: "1px solid #222",
-      minHeight: "350px", // Increased min-height to fill the dashboard section
+      minHeight: "350px",
       display: "flex",
       flexDirection: "column"
     }}>
@@ -63,7 +69,6 @@ export default function CurrentRentals() {
       {loading ? (
         <p style={{ color: "#666" }}>Loading rentals...</p>
       ) : rentedCars.length > 0 ? (
-        /* GRID LAYOUT: Utilizing the horizontal and vertical space */
         <div style={{ 
           display: "grid", 
           gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", 
@@ -99,17 +104,17 @@ export default function CurrentRentals() {
         </div>
       )}
 
-      {/* MODAL remains the same for full detailed history */}
+      {/* FULL SCREEN MODAL */}
       {isModalOpen && (
         <div style={{
-          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-          backgroundColor: "rgba(0,0,0,0.9)", display: "flex", justifyContent: "center",
-          alignItems: "center", zIndex: 9999, backdropFilter: "blur(8px)"
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.92)", display: "flex", justifyContent: "center",
+          alignItems: "center", zIndex: 99998, backdropFilter: "blur(10px)"
         }}>
           <div style={{
-            background: "#111", padding: "30px", borderRadius: "20px",
-            width: "95%", maxWidth: "600px", maxHeight: "85vh", overflowY: "auto",
-            border: "1px solid #333"
+            background: "#111", padding: "35px", borderRadius: "20px",
+            width: "95%", maxWidth: "600px", maxHeight: "80vh", overflowY: "auto",
+            border: "1px solid #444", boxShadow: "0 10px 40px rgba(0,0,0,0.8)"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "25px", alignItems: "center" }}>
               <h2 style={{ color: "white", margin: 0 }}>Active Rental Details</h2>

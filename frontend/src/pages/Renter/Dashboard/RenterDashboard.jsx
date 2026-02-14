@@ -10,24 +10,21 @@ export default function RenterDashboard() {
   const [filters, setFilters] = useState(initialFilters);
 
   const handleSearch = (searchData) => setFilters(searchData);
-
   const handleClear = () => setFilters(initialFilters);
 
-  // New function to receive data from a CarCard and fill the SearchSection
   const handleAutoFill = (carDetails) => {
-    setFilters(prev => ({
-      ...prev,
-      model: carDetails.model,
-      location: carDetails.location
+    setFilters(prev => ({ 
+      ...prev, 
+      model: carDetails.model, 
+      location: carDetails.location 
     }));
-    // Scroll smoothly to top so user sees the date inputs
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="renter-page">
+    <div className="renter-page" style={{ overflowX: "hidden", minHeight: "100vh" }}>
       <div className="renter-container">
-        <h1 className="renter-title">Renter Dashboard</h1>
+        <h1 className="renter-title" style={{ color: "white", marginBottom: "30px" }}>Renter Dashboard</h1>
         
         <div className="renter-section">
           <SearchSection 
@@ -44,7 +41,12 @@ export default function RenterDashboard() {
           />
         </div>
 
-        <div className="renter-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+        <div className="renter-grid" style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", 
+          gap: "20px",
+          marginTop: "20px"
+        }}>
           <CurrentRental />
           <RentalHistory />
         </div>

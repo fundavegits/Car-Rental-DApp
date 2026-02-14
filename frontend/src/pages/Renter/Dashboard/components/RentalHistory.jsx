@@ -13,7 +13,6 @@ export default function RentalHistory() {
       if (!account) return;
       setLoading(true);
       try {
-        // Fetch both history and all cars to match IDs to names
         const [historyData, allCars] = await Promise.all([
           getRenterHistory(account),
           fetchAllCars()
@@ -28,7 +27,7 @@ export default function RentalHistory() {
           };
         });
 
-        setHistory(detailedHistory.reverse()); // Show most recent first
+        setHistory(detailedHistory.reverse());
       } catch (err) {
         console.error("Error loading history:", err);
       } finally {
@@ -38,6 +37,12 @@ export default function RentalHistory() {
     loadHistoryData();
   }, [account]);
 
+  // SCROLL LOCK
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? "hidden" : "auto";
+    return () => { document.body.style.overflow = "auto"; };
+  }, [isModalOpen]);
+
   return (
     <div className="card" style={{ background: "rgba(255, 255, 255, 0.05)", padding: "20px", borderRadius: "15px", border: "1px solid #222" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
@@ -46,7 +51,7 @@ export default function RentalHistory() {
           <button 
             onClick={() => setIsModalOpen(true)}
             style={{
-              background: "rgba(124, 58, 237, 0.1)", // Subtle purple tint
+              background: "rgba(124, 58, 237, 0.1)",
               border: "1px solid #7c3aed", color: "#a855f7", padding: "6px 12px", borderRadius: "8px",
               cursor: "pointer", fontSize: "0.75rem", fontWeight: "bold"
             }}
@@ -60,7 +65,6 @@ export default function RentalHistory() {
         <p style={{ color: "#666" }}>Loading history...</p>
       ) : history.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {/* Preview: Last 5 items */}
           {history.slice(0, 5).map((item, index) => (
             <div key={index} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #333" }}>
               <div>
@@ -75,17 +79,17 @@ export default function RentalHistory() {
         <p style={{ color: "#666", fontStyle: "italic" }}>No history found.</p>
       )}
 
-      {/* MODAL: Full Professional History Table */}
+      {/* FULL SCREEN MODAL */}
       {isModalOpen && (
         <div style={{
-          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-          backgroundColor: "rgba(0,0,0,0.9)", display: "flex", justifyContent: "center",
-          alignItems: "center", zIndex: 9999, backdropFilter: "blur(8px)"
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.92)", display: "flex", justifyContent: "center",
+          alignItems: "center", zIndex: 99997, backdropFilter: "blur(10px)"
         }}>
           <div style={{
-            background: "#111", padding: "30px", borderRadius: "20px",
-            width: "95%", maxWidth: "700px", maxHeight: "80vh", overflowY: "auto",
-            border: "1px solid #333", boxShadow: "0 20px 50px rgba(0,0,0,0.5)"
+            background: "#0d0d0d", padding: "30px", borderRadius: "20px",
+            width: "95%", maxWidth: "800px", maxHeight: "80vh", overflowY: "auto",
+            border: "1px solid #333", boxShadow: "0 20px 60px rgba(0,0,0,1)"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "25px", alignItems: "center" }}>
               <h2 style={{ color: "white", margin: 0 }}>All Transactions</h2>
