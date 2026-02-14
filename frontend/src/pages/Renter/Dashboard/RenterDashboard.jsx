@@ -8,48 +8,50 @@ import RentalHistory from "./components/RentalHistory";
 export default function RenterDashboard() {
   const initialFilters = { model: "", location: "", startDate: "", endDate: "" };
   const [filters, setFilters] = useState(initialFilters);
-  const [activeModal, setActiveModal] = useState(null); // 'market', 'current', 'history', or null
-
-  const handleSearch = (searchData) => setFilters(searchData);
-  const handleClear = () => setFilters(initialFilters);
+  
+  // 'market', 'current', 'history', or null
+  const [activeView, setActiveView] = useState(null);
 
   const handleAutoFill = (carDetails) => {
     setFilters(prev => ({ ...prev, model: carDetails.model, location: carDetails.location }));
-    setActiveModal(null);
+    setActiveView(null); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="renter-page" style={{ position: "relative", minHeight: "100vh" }}>
-      <div className="renter-container">
-        <h1 className="renter-title">Renter Dashboard</h1>
+    <div className="renter-page" style={{ minHeight: "100vh", backgroundColor: "#0b0b0d", color: "white" }}>
+      <div className="renter-container" style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px" }}>
         
-        <div className="renter-section">
-          <SearchSection onSearch={handleSearch} onClear={handleClear} currentFilters={filters} />
-        </div>
+        <h1 className="renter-title" style={{ fontSize: "2.5rem", fontWeight: "800", marginBottom: "40px" }}>
+          Renter Dashboard
+        </h1>
 
-        <div className="renter-section">
-          <AvailableCars 
-            filters={filters} 
-            onAutoFill={handleAutoFill}
-            isModalOpen={activeModal === 'market'}
-            openModal={() => setActiveModal('market')}
-            closeModal={() => setActiveModal(null)}
-          />
-        </div>
+        {/* --- FOCUS MODE VIEW --- */}
+        {activeView === 'market' && (
+          <AvailableCars expanded={true} filters={filters} onAutoFill={handleAutoFill} close={() => setActiveView(null)} />
+        )}
+        
+        {activeView === 'current' && (
+          <CurrentRental expanded={true} close={() => setActiveView(null)} />
+        )}
 
-        <div className="renter-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-          <CurrentRental 
-            isModalOpen={activeModal === 'current'}
-            openModal={() => setActiveModal('current')}
-            closeModal={() => setActiveModal(null)}
-          />
-          <RentalHistory 
-            isModalOpen={activeModal === 'history'}
-            openModal={() => setActiveModal('history')}
-            closeModal={() => setActiveModal(null)}
-          />
-        </div>
+        {activeView === 'history' && (
+          <RentalHistory expanded={true} close={() => setActiveView(null)} />
+        )}
+
+        {/* --- STANDARD DASHBOARD GRID --- */}
+        {!activeView && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+            <SearchSection onSearch={setFilters} onClear={() => setFilters(initialFilters)} currentFilters={filters} />
+
+            <AvailableCars expanded={false} filters={filters} onAutoFill={handleAutoFill} open={() => setActiveView('market')} />
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: "30px" }}>
+              <CurrentRental expanded={false} open={() => setActiveView('current')} />
+              <RentalHistory expanded={false} open={() => setActiveView('history')} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
